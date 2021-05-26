@@ -34,6 +34,11 @@
     },
     "name": "@kizahasi/ot-string",
     "author": "kizahasi",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kizahasi/ot-string"
+    },
+    "description": "Operational Transfomation library for string",
     "module": "dist/ot-string.esm.js",
     "size-limit": [{
             "path": "dist/ot-string.cjs.production.min.js",
