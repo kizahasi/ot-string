@@ -30,7 +30,8 @@
         "semi": true,
         "singleQuote": true,
         "trailingComma": "es5",
-        "tabWidth": 4
+        "tabWidth": 4,
+        "endOfLine": "crlf"
     },
     "name": "@kizahasi/ot-string",
     "author": "kizahasi",
@@ -39,6 +40,7 @@
         "url": "https://github.com/kizahasi/ot-string"
     },
     "description": "Operational Transfomation library for string",
+    "keywords": ["operational transformation", "operational transform", "ot"],
     "module": "dist/ot-string.esm.js",
     "size-limit": [{
             "path": "dist/ot-string.cjs.production.min.js",

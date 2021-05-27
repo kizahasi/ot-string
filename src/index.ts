@@ -97,6 +97,9 @@ type Factory<TInsert, TDelete> = {
 export const insert$ = 'insert';
 export const delete$ = 'delete'; // deleteという変数名は使えない。insertやreplaceも$をつけることで統一している。
 const replace$ = 'replace';
+export const i = 'i';
+export const d = 'd';
+const r = 'r';
 
 type Insert<TInsert> = {
     type: typeof insert$;
@@ -1207,16 +1210,16 @@ export namespace TextTwoWayOperation {
     export type Operation = TextOperation<NonEmptyString, NonEmptyString>;
     export type OperationUnit =
         | {
-              type: typeof retain;
-              retain: number;
+              t: typeof r;
+              r: number;
           }
         | {
-              type: typeof insert$;
-              insert: string;
+              t: typeof i;
+              i: string;
           }
         | {
-              type: typeof delete$;
-              delete: string;
+              t: typeof d;
+              d: string;
           };
 
     export const diff = ({
@@ -1281,18 +1284,18 @@ export namespace TextTwoWayOperation {
             switch (unit.type) {
                 case insert$:
                     return {
-                        type: insert$,
-                        insert: unit.insert.value,
+                        t: i,
+                        i: unit.insert.value,
                     } as const;
                 case delete$:
                     return {
-                        type: delete$,
-                        delete: unit.delete.value,
+                        t: d,
+                        d: unit.delete.value,
                     } as const;
                 case retain:
                     return {
-                        type: retain,
-                        retain: unit.retain.value,
+                        t: r,
+                        r: unit.retain.value,
                     } as const;
             }
         });
@@ -1307,9 +1310,9 @@ export namespace TextTwoWayOperation {
             if (unit == null) {
                 continue;
             }
-            switch (unit.type) {
-                case retain: {
-                    const retain = unit.retain;
+            switch (unit.t) {
+                case r: {
+                    const retain = unit.r;
                     const retainAsPositiveInt = PositiveInt.tryCreate(retain);
                     if (retainAsPositiveInt == null) {
                         continue;
@@ -1317,8 +1320,8 @@ export namespace TextTwoWayOperation {
                     builder.retain(retainAsPositiveInt);
                     break;
                 }
-                case insert$: {
-                    const insert = unit.insert;
+                case i: {
+                    const insert = unit.i;
                     const insertAsNonEpmtyString = NonEmptyString.tryCreate(
                         insert
                     );
@@ -1328,8 +1331,8 @@ export namespace TextTwoWayOperation {
                     builder.insert(insertAsNonEpmtyString);
                     break;
                 }
-                case delete$: {
-                    const del = unit.delete;
+                case d: {
+                    const del = unit.d;
                     const delAsNonEmptyString = NonEmptyString.tryCreate(del);
                     if (delAsNonEmptyString == null) {
                         continue;
@@ -1368,16 +1371,16 @@ export namespace TextUpOperation {
     export type Operation = TextOperation<NonEmptyString, PositiveInt>;
     export type OperationUnit =
         | {
-              type: typeof retain;
-              retain: number;
+              t: typeof r;
+              r: number;
           }
         | {
-              type: typeof insert$;
-              insert: string;
+              t: typeof i;
+              i: string;
           }
         | {
-              type: typeof delete$;
-              delete: number;
+              t: typeof d;
+              d: number;
           };
 
     export const apply = ({
@@ -1487,18 +1490,18 @@ export namespace TextUpOperation {
                 switch (unit.type) {
                     case insert$:
                         return {
-                            type: insert$,
-                            insert: unit.insert.value,
+                            t: i,
+                            i: unit.insert.value,
                         } as const;
                     case delete$:
                         return {
-                            type: delete$,
-                            delete: unit.delete.value,
+                            t: d,
+                            d: unit.delete.value,
                         } as const;
                     case retain:
                         return {
-                            type: retain,
-                            retain: unit.retain.value,
+                            t: r,
+                            r: unit.retain.value,
                         } as const;
                 }
             }
@@ -1515,9 +1518,9 @@ export namespace TextUpOperation {
             if (unit == null) {
                 continue;
             }
-            switch (unit.type) {
-                case retain: {
-                    const retain = unit.retain;
+            switch (unit.t) {
+                case r: {
+                    const retain = unit.r;
                     const retainAsPositiveInt = PositiveInt.tryCreate(retain);
                     if (retainAsPositiveInt == null) {
                         continue;
@@ -1525,8 +1528,8 @@ export namespace TextUpOperation {
                     builder.retain(retainAsPositiveInt);
                     break;
                 }
-                case insert$: {
-                    const insert = unit.insert;
+                case i: {
+                    const insert = unit.i;
                     const insertAsNonEmptyString = NonEmptyString.tryCreate(
                         insert
                     );
@@ -1536,11 +1539,9 @@ export namespace TextUpOperation {
                     builder.insert(insertAsNonEmptyString);
                     break;
                 }
-                case delete$: {
+                case d: {
                     const del =
-                        typeof unit.delete === 'string'
-                            ? unit.delete.length
-                            : unit.delete;
+                        typeof unit.d === 'string' ? unit.d.length : unit.d;
                     const delAsPositiveInt = PositiveInt.tryCreate(del);
                     if (delAsPositiveInt == null) {
                         continue;
@@ -1559,16 +1560,16 @@ export namespace TextDownOperation {
     export type Operation = TextOperation<PositiveInt, NonEmptyString>;
     export type OperationUnit =
         | {
-              type: typeof retain;
-              retain: number;
+              t: typeof r;
+              r: number;
           }
         | {
-              type: typeof insert$;
-              insert: number;
+              t: typeof i;
+              i: number;
           }
         | {
-              type: typeof delete$;
-              delete: string;
+              t: typeof d;
+              d: string;
           };
 
     export const applyBack = ({
@@ -1641,18 +1642,18 @@ export namespace TextDownOperation {
                 switch (unit.type) {
                     case insert$:
                         return {
-                            type: insert$,
-                            insert: unit.insert.value,
+                            t: i,
+                            i: unit.insert.value,
                         } as const;
                     case delete$:
                         return {
-                            type: delete$,
-                            delete: unit.delete.value,
+                            t: d,
+                            d: unit.delete.value,
                         } as const;
                     case retain:
                         return {
-                            type: retain,
-                            retain: unit.retain.value,
+                            t: r,
+                            r: unit.retain.value,
                         } as const;
                 }
             }
@@ -1669,9 +1670,9 @@ export namespace TextDownOperation {
             if (unit == null) {
                 continue;
             }
-            switch (unit.type) {
-                case retain: {
-                    const retain = unit.retain;
+            switch (unit.t) {
+                case r: {
+                    const retain = unit.r;
                     const retainAsPositiveInt = PositiveInt.tryCreate(retain);
                     if (retainAsPositiveInt == null) {
                         continue;
@@ -1679,11 +1680,9 @@ export namespace TextDownOperation {
                     builder.retain(retainAsPositiveInt);
                     break;
                 }
-                case insert$: {
+                case i: {
                     const insert =
-                        typeof unit.insert === 'string'
-                            ? unit.insert.length
-                            : unit.insert;
+                        typeof unit.i === 'string' ? unit.i.length : unit.i;
                     const insertAsPositiveInt = PositiveInt.tryCreate(insert);
                     if (insertAsPositiveInt == null) {
                         continue;
@@ -1691,8 +1690,8 @@ export namespace TextDownOperation {
                     builder.insert(insertAsPositiveInt);
                     break;
                 }
-                case delete$: {
-                    const del = unit.delete;
+                case d: {
+                    const del = unit.d;
                     const delAsPositiveInt = NonEmptyString.tryCreate(del);
                     if (delAsPositiveInt == null) {
                         continue;
