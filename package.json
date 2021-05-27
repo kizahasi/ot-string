@@ -1,5 +1,5 @@
 {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "license": "MIT",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
@@ -40,9 +40,14 @@
         "url": "https://github.com/kizahasi/ot-string"
     },
     "description": "Operational Transfomation library for string",
-    "keywords": ["operational transformation", "operational transform", "ot"],
+    "keywords": [
+        "operational transformation",
+        "operational transform",
+        "ot"
+    ],
     "module": "dist/ot-string.esm.js",
-    "size-limit": [{
+    "size-limit": [
+        {
             "path": "dist/ot-string.cjs.production.min.js",
             "limit": "10 KB"
         },
