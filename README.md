@@ -38,38 +38,39 @@ const first = TextDownOperation.applyBack({
 */
 
 // If you want to serialize a Text(Up|Down)Operation.Operation object, Text(Up|Down)Operation.toUpUnit helps you.
+// (t = type, r = retain, i = insert, d = delete)
 const upOperationAsUnitArray = TextUpOperation.toUnit(upOperation);
 /* upOperationAsUnitArray =
 [
-    { type: 'delete', delete: 1 },
-    { type: 'insert', insert: 'Vi' },
-    { type: 'retain', retain: 1 },
-    { type: 'delete', delete: 1 },
-    { type: 'insert', insert: 'l' },
-    { type: 'retain', retain: 1 },
-    { type: 'insert', insert: 't' },
-    { type: 'retain', retain: 6 },
-    { type: 'delete', delete: 1 },
-    { type: 'insert', insert: 'blu' },
-    { type: 'retain', retain: 1 },
-    { type: 'delete', delete: 1 }
+    { t: 'd', d: 1 },
+    { t: 'i', i: 'Vi' },
+    { t: 'r', r: 1 },
+    { t: 'd', d: 1 },
+    { t: 'i', i: 'l' },
+    { t: 'r', r: 1 },
+    { t: 'i', i: 't' },
+    { t: 'r', r: 6 },
+    { t: 'd', d: 1 },
+    { t: 'i', i: 'blu' },
+    { t: 'r', r: 1 },
+    { t: 'd', d: 1 }
 ]
 */
 const downOperationAsUnitArray = TextDownOperation.toUnit(downOperation);
 /* downOperationAsUnitArray =
 [
-    { type: 'delete', delete: 'R' },
-    { type: 'insert', insert: 2 },
-    { type: 'retain', retain: 1 },
-    { type: 'delete', delete: 's' },
-    { type: 'insert', insert: 1 },
-    { type: 'retain', retain: 1 },
-    { type: 'insert', insert: 1 },
-    { type: 'retain', retain: 6 },
-    { type: 'delete', delete: 'r' },
-    { type: 'insert', insert: 3 },
-    { type: 'retain', retain: 1 },
-    { type: 'delete', delete: 'd' }
+    { t: 'd', d: 'R' },
+    { t: 'i', i: 2 },
+    { t: 'r', r: 1 },
+    { t: 'd', d: 's' },
+    { t: 'i', i: 1 },
+    { t: 'r', r: 1 },
+    { t: 'i', i: 1 },
+    { t: 'r', r: 6 },
+    { t: 'd', d: 'r' },
+    { t: 'i', i: 3 },
+    { t: 'r', r: 1 },
+    { t: 'd', d: 'd' }
 ]
 */
 
