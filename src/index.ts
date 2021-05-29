@@ -391,7 +391,7 @@ class TextOperationBuilder<TInsert, TDelete> {
             return;
         }
         this.headEdit = source.headEdit ?? null;
-        this.body = [...source.body];
+        this.body = Array.from(source.body);
         this.tailRetain = source.tailRetain ?? 0;
     }
 
@@ -517,7 +517,7 @@ class TextOperationBuilder<TInsert, TDelete> {
     public build(): TextOperation<TInsert, TDelete> {
         return {
             headEdit: this.headEdit ?? undefined,
-            body: [...this.body],
+            body: Array.from(this.body),
             tailRetain: this.tailRetain === 0 ? undefined : this.tailRetain,
         };
     }
@@ -742,8 +742,8 @@ const composeCore = <TInsert, TDelete>({
         return Result.error({ type: secondTooShort });
     }
 
-    const first = [...$first];
-    const second = [...$second];
+    const first = Array.from($first);
+    const second = Array.from($second);
     let firstShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
     let secondShift:
         | TextOperationUnit<TInsert, TDelete>
@@ -958,8 +958,8 @@ const transformCore = <TInsert, TDelete>({
         return Result.error({ type: secondTooShort });
     }
 
-    const first = [...$first];
-    const second = [...$second];
+    const first = Array.from($first);
+    const second = Array.from($second);
     let firstShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
     let secondShift:
         | TextOperationUnit<TInsert, TDelete>
@@ -1261,12 +1261,12 @@ export namespace TextTwoWayOperation {
         ComposeAndTransformError
     > => {
         return transformCore({
-            first: [
-                ...new TextOperationBuilder(twoWayFactory, first).toUnits(),
-            ],
-            second: [
-                ...new TextOperationBuilder(twoWayFactory, second).toUnits(),
-            ],
+            first: Array.from(
+                new TextOperationBuilder(twoWayFactory, first).toUnits()
+            ),
+            second: Array.from(
+                new TextOperationBuilder(twoWayFactory, second).toUnits()
+            ),
             factory: twoWayFactory,
             splitDelete: (target, deleteCount) => [
                 new NonEmptyString(
@@ -1278,9 +1278,9 @@ export namespace TextTwoWayOperation {
     };
 
     export const toUnit = (source: Operation): OperationUnit[] => {
-        return [
-            ...new TextOperationBuilder(twoWayFactory, source).toUnits(),
-        ].map(unit => {
+        return Array.from(
+            new TextOperationBuilder(twoWayFactory, source).toUnits()
+        ).map(unit => {
             switch (unit.type) {
                 case insert$:
                     return {
@@ -1392,9 +1392,9 @@ export namespace TextUpOperation {
     }): CustomResult<string, ApplyError<PositiveInt>> => {
         const result = applyAndRestoreCore({
             state: prevState,
-            action: [
-                ...new TextOperationBuilder(upFactory, action).toIterable(),
-            ],
+            action: Array.from(
+                new TextOperationBuilder(upFactory, action).toIterable()
+            ),
             getDeleteLength: del => del,
             mapping: () => OptionModule.some(undefined),
         });
@@ -1416,9 +1416,9 @@ export namespace TextUpOperation {
     > => {
         const result = applyAndRestoreCore({
             state: prevState,
-            action: [
-                ...new TextOperationBuilder(upFactory, action).toIterable(),
-            ],
+            action: Array.from(
+                new TextOperationBuilder(upFactory, action).toIterable()
+            ),
             getDeleteLength: del => del,
             restoreOption: {
                 factory: twoWayFactory,
@@ -1445,8 +1445,12 @@ export namespace TextUpOperation {
         second: Operation;
     }): CustomResult<Operation, ComposeAndTransformError> => {
         return composeCore({
-            first: [...new TextOperationBuilder(upFactory, first).toUnits()],
-            second: [...new TextOperationBuilder(upFactory, second).toUnits()],
+            first: Array.from(
+                new TextOperationBuilder(upFactory, first).toUnits()
+            ),
+            second: Array.from(
+                new TextOperationBuilder(upFactory, second).toUnits()
+            ),
             factory: upFactory,
             splitInsert: (str, index) => [
                 new NonEmptyString(str.value.substring(0, index.value)),
@@ -1470,8 +1474,12 @@ export namespace TextUpOperation {
         ComposeAndTransformError
     > => {
         return transformCore({
-            first: [...new TextOperationBuilder(upFactory, first).toUnits()],
-            second: [...new TextOperationBuilder(upFactory, second).toUnits()],
+            first: Array.from(
+                new TextOperationBuilder(upFactory, first).toUnits()
+            ),
+            second: Array.from(
+                new TextOperationBuilder(upFactory, second).toUnits()
+            ),
             factory: upFactory,
             splitDelete: (target, deleteCount) => [
                 deleteCount,
@@ -1485,27 +1493,27 @@ export namespace TextUpOperation {
     ): TextOperation<PositiveInt, NonEmptyString> => invertCore(source);
 
     export const toUnit = (source: Operation): OperationUnit[] => {
-        return [...new TextOperationBuilder(upFactory, source).toUnits()].map(
-            unit => {
-                switch (unit.type) {
-                    case insert$:
-                        return {
-                            t: i,
-                            i: unit.insert.value,
-                        } as const;
-                    case delete$:
-                        return {
-                            t: d,
-                            d: unit.delete.value,
-                        } as const;
-                    case retain:
-                        return {
-                            t: r,
-                            r: unit.retain.value,
-                        } as const;
-                }
+        return Array.from(
+            new TextOperationBuilder(upFactory, source).toUnits()
+        ).map(unit => {
+            switch (unit.type) {
+                case insert$:
+                    return {
+                        t: i,
+                        i: unit.insert.value,
+                    } as const;
+                case delete$:
+                    return {
+                        t: d,
+                        d: unit.delete.value,
+                    } as const;
+                case retain:
+                    return {
+                        t: r,
+                        r: unit.retain.value,
+                    } as const;
             }
-        );
+        });
     };
 
     export const ofUnit = (
@@ -1616,10 +1624,12 @@ export namespace TextDownOperation {
         second: Operation;
     }): CustomResult<Operation, ComposeAndTransformError> => {
         return composeCore({
-            first: [...new TextOperationBuilder(downFactory, first).toUnits()],
-            second: [
-                ...new TextOperationBuilder(downFactory, second).toUnits(),
-            ],
+            first: Array.from(
+                new TextOperationBuilder(downFactory, first).toUnits()
+            ),
+            second: Array.from(
+                new TextOperationBuilder(downFactory, second).toUnits()
+            ),
             factory: downFactory,
             splitInsert: (target, deleteCount) => [
                 deleteCount,
@@ -1637,27 +1647,27 @@ export namespace TextDownOperation {
     ): TextOperation<NonEmptyString, PositiveInt> => invertCore(source);
 
     export const toUnit = (source: Operation): OperationUnit[] => {
-        return [...new TextOperationBuilder(downFactory, source).toUnits()].map(
-            unit => {
-                switch (unit.type) {
-                    case insert$:
-                        return {
-                            t: i,
-                            i: unit.insert.value,
-                        } as const;
-                    case delete$:
-                        return {
-                            t: d,
-                            d: unit.delete.value,
-                        } as const;
-                    case retain:
-                        return {
-                            t: r,
-                            r: unit.retain.value,
-                        } as const;
-                }
+        return Array.from(
+            new TextOperationBuilder(downFactory, source).toUnits()
+        ).map(unit => {
+            switch (unit.type) {
+                case insert$:
+                    return {
+                        t: i,
+                        i: unit.insert.value,
+                    } as const;
+                case delete$:
+                    return {
+                        t: d,
+                        d: unit.delete.value,
+                    } as const;
+                case retain:
+                    return {
+                        t: r,
+                        r: unit.retain.value,
+                    } as const;
             }
-        );
+        });
     };
 
     export const ofUnit = (

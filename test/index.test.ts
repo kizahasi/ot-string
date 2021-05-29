@@ -5,7 +5,7 @@ import {
     TextDownOperation,
     TextTwoWayOperation,
     TextUpOperation,
-} from '../src/index';
+} from '../dist/index';
 import fc from 'fast-check';
 
 // TODO: apply以外の異常系のテスト
