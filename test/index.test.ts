@@ -21,7 +21,7 @@ it('tests diff and apply', () => {
                 prevState: first,
                 action: upOperation,
             });
-            if (actual.isError === true) {
+            if (actual.isError) {
                 throw actual.error;
             }
             expect(actual.value).toEqual(second);
@@ -79,7 +79,7 @@ it('tests applyAndRestore', () => {
                 prevState: first,
                 action: upOperation,
             });
-            if (actual.isError === true) {
+            if (actual.isError) {
                 throw actual.error;
             }
             expect(actual.value).toEqual({
@@ -102,7 +102,7 @@ it('tests compose', () => {
                 TextTwoWayOperation.diff(secondPair)
             );
             const composed = TextUpOperation.compose({ first, second });
-            if (composed.isError === true) {
+            if (composed.isError) {
                 throw composed.error;
             }
             const expected = (() => {
@@ -110,14 +110,14 @@ it('tests compose', () => {
                     prevState: firstPair.first,
                     action: first,
                 });
-                if (firstApplied.isError === true) {
+                if (firstApplied.isError) {
                     throw firstApplied.error;
                 }
                 const secondApplied = TextUpOperation.apply({
                     prevState: firstApplied.value,
                     action: second,
                 });
-                if (secondApplied.isError === true) {
+                if (secondApplied.isError) {
                     throw secondApplied.error;
                 }
                 return secondApplied.value;
@@ -126,7 +126,7 @@ it('tests compose', () => {
                 prevState: firstPair.first,
                 action: composed.value,
             });
-            if (actual.isError === true) {
+            if (actual.isError) {
                 throw actual.error;
             }
             expect(actual.value).toEqual(expected);
@@ -145,7 +145,7 @@ it('tests transform', () => {
                 first,
                 second,
             });
-            if (xform.isError === true) {
+            if (xform.isError) {
                 throw xform.error;
             }
             const result1 = (() => {
@@ -153,7 +153,7 @@ it('tests transform', () => {
                     prevState: root,
                     action: TextTwoWayOperation.toUpOperation(first),
                 });
-                if (firstApplied.isError === true) {
+                if (firstApplied.isError) {
                     throw firstApplied.error;
                 }
                 const secondApplied = TextUpOperation.apply({
@@ -162,7 +162,7 @@ it('tests transform', () => {
                         xform.value.secondPrime
                     ),
                 });
-                if (secondApplied.isError === true) {
+                if (secondApplied.isError) {
                     throw secondApplied.error;
                 }
                 const firstAppliedPrime = TextUpOperation.apply({
@@ -181,7 +181,7 @@ it('tests transform', () => {
                     prevState: root,
                     action: TextTwoWayOperation.toUpOperation(second),
                 });
-                if (secondApplied.isError === true) {
+                if (secondApplied.isError) {
                     throw secondApplied.error;
                 }
                 const firstApplied = TextUpOperation.apply({
@@ -190,7 +190,7 @@ it('tests transform', () => {
                         xform.value.firstPrime
                     ),
                 });
-                if (firstApplied.isError === true) {
+                if (firstApplied.isError) {
                     throw firstApplied.error;
                 }
                 const secondAppliedPrime = TextUpOperation.apply({
