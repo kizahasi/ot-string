@@ -5,7 +5,7 @@ import {
     TextDownOperation,
     TextTwoWayOperation,
     TextUpOperation,
-} from '../dist/index';
+} from '../src';
 import fc from 'fast-check';
 
 // TODO: apply以外の異常系のテスト
@@ -14,9 +14,7 @@ it('tests diff and apply', () => {
     fc.assert(
         fc.property(fc.string(), fc.string(), (first, second) => {
             const twoWayOperation = TextTwoWayOperation.diff({ first, second });
-            const upOperation = TextTwoWayOperation.toUpOperation(
-                twoWayOperation
-            );
+            const upOperation = TextTwoWayOperation.toUpOperation(twoWayOperation);
             const actual = TextUpOperation.apply({
                 prevState: first,
                 action: upOperation,
@@ -29,27 +27,24 @@ it('tests diff and apply', () => {
     );
 });
 
-test.each(['xx', 'xxxx'])(
-    'tests apply but text is too short/long',
-    (text: string) => {
-        const operation: TextUpOperation.Operation = {
-            body: [
-                {
-                    firstRetain: new PositiveInt(3),
-                    secondEdit: {
-                        type: insert$,
-                        insert: new NonEmptyString('Y'),
-                    },
+test.each(['xx', 'xxxx'])('tests apply but text is too short/long', (text: string) => {
+    const operation: TextUpOperation.Operation = {
+        body: [
+            {
+                firstRetain: new PositiveInt(3),
+                secondEdit: {
+                    type: insert$,
+                    insert: new NonEmptyString('Y'),
                 },
-            ],
-        };
-        const actual = TextUpOperation.apply({
-            prevState: text,
-            action: operation,
-        });
-        expect(actual.isError).toBe(true);
-    }
-);
+            },
+        ],
+    };
+    const actual = TextUpOperation.apply({
+        prevState: text,
+        action: operation,
+    });
+    expect(actual.isError).toBe(true);
+});
 
 it('tests apply but text is too short', () => {
     const text = 'xxxx';
@@ -72,9 +67,7 @@ it('tests applyAndRestore', () => {
     fc.assert(
         fc.property(fc.string(), fc.string(), (first, second) => {
             const twoWayOperation = TextTwoWayOperation.diff({ first, second });
-            const upOperation = TextTwoWayOperation.toUpOperation(
-                twoWayOperation
-            );
+            const upOperation = TextTwoWayOperation.toUpOperation(twoWayOperation);
             const actual = TextUpOperation.applyAndRestore({
                 prevState: first,
                 action: upOperation,
@@ -95,12 +88,8 @@ it('tests compose', () => {
         fc.property(fc.string(), fc.string(), fc.string(), (a, b, c) => {
             const firstPair = { first: a, second: b };
             const secondPair = { first: b, second: c };
-            const first = TextTwoWayOperation.toUpOperation(
-                TextTwoWayOperation.diff(firstPair)
-            );
-            const second = TextTwoWayOperation.toUpOperation(
-                TextTwoWayOperation.diff(secondPair)
-            );
+            const first = TextTwoWayOperation.toUpOperation(TextTwoWayOperation.diff(firstPair));
+            const second = TextTwoWayOperation.toUpOperation(TextTwoWayOperation.diff(secondPair));
             const composed = TextUpOperation.compose({ first, second });
             if (composed.isError) {
                 throw composed.error;
@@ -158,9 +147,7 @@ it('tests transform', () => {
                 }
                 const secondApplied = TextUpOperation.apply({
                     prevState: firstApplied.value,
-                    action: TextTwoWayOperation.toUpOperation(
-                        xform.value.secondPrime
-                    ),
+                    action: TextTwoWayOperation.toUpOperation(xform.value.secondPrime),
                 });
                 if (secondApplied.isError) {
                     throw secondApplied.error;
@@ -168,9 +155,7 @@ it('tests transform', () => {
                 const firstAppliedPrime = TextUpOperation.apply({
                     prevState: secondApplied.value,
                     action: TextDownOperation.invert(
-                        TextTwoWayOperation.toDownOperation(
-                            xform.value.secondPrime
-                        )
+                        TextTwoWayOperation.toDownOperation(xform.value.secondPrime)
                     ),
                 });
                 expect(firstApplied).toEqual(firstAppliedPrime);
@@ -186,9 +171,7 @@ it('tests transform', () => {
                 }
                 const firstApplied = TextUpOperation.apply({
                     prevState: secondApplied.value,
-                    action: TextTwoWayOperation.toUpOperation(
-                        xform.value.firstPrime
-                    ),
+                    action: TextTwoWayOperation.toUpOperation(xform.value.firstPrime),
                 });
                 if (firstApplied.isError) {
                     throw firstApplied.error;
@@ -196,9 +179,7 @@ it('tests transform', () => {
                 const secondAppliedPrime = TextUpOperation.apply({
                     prevState: firstApplied.value,
                     action: TextDownOperation.invert(
-                        TextTwoWayOperation.toDownOperation(
-                            xform.value.firstPrime
-                        )
+                        TextTwoWayOperation.toDownOperation(xform.value.firstPrime)
                     ),
                 });
                 expect(secondApplied).toEqual(secondAppliedPrime);
