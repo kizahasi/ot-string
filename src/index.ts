@@ -119,26 +119,17 @@ type Replace<TInsert, TDelete> = {
     delete: TDelete;
 };
 
-type EditElement<TInsert, TDelete> =
-    | Insert<TInsert>
-    | Delete<TDelete>
-    | Replace<TInsert, TDelete>;
+type EditElement<TInsert, TDelete> = Insert<TInsert> | Delete<TDelete> | Replace<TInsert, TDelete>;
 
 const prevLengthOfEditElement = <TInsert, TDelete>(
     source: EditElement<TInsert, TDelete>,
     factory: Factory<TInsert, TDelete>
-) =>
-    source.delete === undefined
-        ? 0
-        : factory.getDeleteLength(source.delete).value;
+) => (source.delete === undefined ? 0 : factory.getDeleteLength(source.delete).value);
 
 const nextLengthOfEditElement = <TInsert, TDelete>(
     source: EditElement<TInsert, TDelete>,
     factory: Factory<TInsert, TDelete>
-) =>
-    source.insert === undefined
-        ? 0
-        : factory.getInsertLength(source.insert).value;
+) => (source.insert === undefined ? 0 : factory.getInsertLength(source.insert).value);
 
 const mapEditElement = <TInsert1, TInsert2, TDelete1, TDelete2>({
     source,
@@ -221,9 +212,7 @@ const deleteToEditElement = <TInsert, TDelete>(
     }
 };
 
-const invertEditElement = <T1, T2>(
-    source: EditElement<T1, T2>
-): EditElement<T2, T1> => {
+const invertEditElement = <T1, T2>(source: EditElement<T1, T2>): EditElement<T2, T1> => {
     switch (source.type) {
         case insert$:
             return {
@@ -268,9 +257,7 @@ const prevLengthOfTextOperationElementArray = <TInsert, TDelete>(
             default:
                 return (
                     seed +
-                    (elem.edit.delete === undefined
-                        ? 0
-                        : getDeleteLength(elem.edit.delete).value)
+                    (elem.edit.delete === undefined ? 0 : getDeleteLength(elem.edit.delete).value)
                 );
         }
     }, 0);
@@ -420,14 +407,11 @@ class TextOperationBuilder<TInsert, TDelete> {
             return;
         }
         if (this.body.length !== 0) {
-            const last = this.body[this.body.length - 1];
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const last = this.body[this.body.length - 1]!;
             this.body[this.body.length - 1] = {
                 ...last,
-                secondEdit: insertToEditElement(
-                    last.secondEdit,
-                    insert,
-                    this.factory.concatInsert
-                ),
+                secondEdit: insertToEditElement(last.secondEdit, insert, this.factory.concatInsert),
             };
             return;
         }
@@ -439,11 +423,7 @@ class TextOperationBuilder<TInsert, TDelete> {
             };
             return;
         }
-        this.headEdit = insertToEditElement(
-            this.headEdit,
-            insert,
-            this.factory.concatInsert
-        );
+        this.headEdit = insertToEditElement(this.headEdit, insert, this.factory.concatInsert);
     }
 
     public delete(del: TDelete): void {
@@ -459,14 +439,11 @@ class TextOperationBuilder<TInsert, TDelete> {
             return;
         }
         if (this.body.length !== 0) {
-            const last = this.body[this.body.length - 1];
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const last = this.body[this.body.length - 1]!;
             this.body[this.body.length - 1] = {
                 ...last,
-                secondEdit: deleteToEditElement(
-                    last.secondEdit,
-                    del,
-                    this.factory.concatDelete
-                ),
+                secondEdit: deleteToEditElement(last.secondEdit, del, this.factory.concatDelete),
             };
             return;
         }
@@ -478,11 +455,7 @@ class TextOperationBuilder<TInsert, TDelete> {
             };
             return;
         }
-        this.headEdit = deleteToEditElement(
-            this.headEdit,
-            del,
-            this.factory.concatDelete
-        );
+        this.headEdit = deleteToEditElement(this.headEdit, del, this.factory.concatDelete);
     }
 
     public edit(edit: EditElement<TInsert, TDelete>) {
@@ -494,9 +467,7 @@ class TextOperationBuilder<TInsert, TDelete> {
         }
     }
 
-    public onArrayElement(
-        arrayElement: TextOperationArrayElement<TInsert, TDelete>
-    ) {
+    public onArrayElement(arrayElement: TextOperationArrayElement<TInsert, TDelete>) {
         switch (arrayElement.type) {
             case retain:
                 this.retain(arrayElement.retain);
@@ -522,9 +493,7 @@ class TextOperationBuilder<TInsert, TDelete> {
         };
     }
 
-    public *toIterable(): IterableIterator<
-        TextOperationArrayElement<TInsert, TDelete>
-    > {
+    public *toIterable(): IterableIterator<TextOperationArrayElement<TInsert, TDelete>> {
         const operation = this.build();
         if (operation.headEdit != null) {
             yield { type: edit, edit: operation.headEdit };
@@ -570,10 +539,7 @@ const replace = ({
     }
     const deleted = source.substring(start, start + count);
     return {
-        newValue:
-            source.substring(0, start) +
-            replacement +
-            source.substring(start + count),
+        newValue: source.substring(0, start) + replacement + source.substring(start + count),
         deleted,
     };
 };
@@ -614,18 +580,12 @@ const applyAndRestoreCore = <TDelete1, TDelete2>({
 
     // Noneを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にSomeを返せばよい。
     // restoreOption === undefinedのとき、TDelete2は使われないのでOkの値は何でもいい。
-    mapping: (params: {
-        expected: TDelete1;
-        actual: NonEmptyString;
-    }) => Option<TDelete2>;
+    mapping: (params: { expected: TDelete1; actual: NonEmptyString }) => Option<TDelete2>;
 }): CustomResult<
     { newState: string; restored?: TextOperation<NonEmptyString, TDelete2> },
     ApplyError<TDelete1>
 > => {
-    const prevLength = prevLengthOfTextOperationElementArray(
-        action,
-        getDeleteLength
-    );
+    const prevLength = prevLengthOfTextOperationElementArray(action, getDeleteLength);
     if (state.length < prevLength) {
         return Result.error({ type: stateTooShort });
     }
@@ -638,9 +598,7 @@ const applyAndRestoreCore = <TDelete1, TDelete2>({
     const builder =
         restoreOption == null
             ? undefined
-            : new TextOperationBuilder<NonEmptyString, TDelete2>(
-                  restoreOption.factory
-              );
+            : new TextOperationBuilder<NonEmptyString, TDelete2>(restoreOption.factory);
 
     for (const act of action) {
         switch (act.type) {
@@ -654,10 +612,7 @@ const applyAndRestoreCore = <TDelete1, TDelete2>({
                 const replaceResult = replace({
                     source: result,
                     start: cursor,
-                    count:
-                        act.edit.delete == null
-                            ? 0
-                            : getDeleteLength(act.edit.delete).value,
+                    count: act.edit.delete == null ? 0 : getDeleteLength(act.edit.delete).value,
                     replacement,
                 });
                 if (replaceResult == null) {
@@ -727,14 +682,8 @@ const composeCore = <TInsert, TDelete>({
 
     factory: Factory<TInsert, TDelete>;
 }): CustomResult<TextOperation<TInsert, TDelete>, ComposeAndTransformError> => {
-    const nextLengthOfFirst = nextLengthOfTextOperationUnitArray(
-        $first,
-        factory
-    );
-    const prevLengthOfSecond = prevLengthOfTextOperationUnitArray(
-        $second,
-        factory
-    );
+    const nextLengthOfFirst = nextLengthOfTextOperationUnitArray($first, factory);
+    const prevLengthOfSecond = prevLengthOfTextOperationUnitArray($second, factory);
     if (nextLengthOfFirst < prevLengthOfSecond) {
         return Result.error({ type: secondTooLong });
     }
@@ -745,9 +694,7 @@ const composeCore = <TInsert, TDelete>({
     const first = Array.from($first);
     const second = Array.from($second);
     let firstShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
-    let secondShift:
-        | TextOperationUnit<TInsert, TDelete>
-        | undefined = undefined;
+    let secondShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
 
     const builder = new TextOperationBuilder<TInsert, TDelete>(factory);
 
@@ -792,9 +739,7 @@ const composeCore = <TInsert, TDelete>({
                     builder.retain(firstShift.retain);
                     secondShift = {
                         type: retain,
-                        retain: new PositiveInt(
-                            secondShift.retain.value - firstShift.retain.value
-                        ),
+                        retain: new PositiveInt(secondShift.retain.value - firstShift.retain.value),
                     };
                     firstShift = undefined;
                     continue;
@@ -807,18 +752,14 @@ const composeCore = <TInsert, TDelete>({
                 builder.retain(secondShift.retain);
                 firstShift = {
                     type: retain,
-                    retain: new PositiveInt(
-                        firstShift.retain.value - secondShift.retain.value
-                    ),
+                    retain: new PositiveInt(firstShift.retain.value - secondShift.retain.value),
                 };
                 secondShift = undefined;
                 continue;
             }
 
             if (secondShift.type === delete$) {
-                const secondShiftDeleteLength = factory.getDeleteLength(
-                    secondShift.delete
-                );
+                const secondShiftDeleteLength = factory.getDeleteLength(secondShift.delete);
                 if (firstShift.retain.value < secondShiftDeleteLength.value) {
                     const [intersection, remaining] = splitDeleteCore(
                         secondShift.delete,
@@ -852,9 +793,7 @@ const composeCore = <TInsert, TDelete>({
         }
 
         if (secondShift.type === retain) {
-            const firstShiftInsertLength = factory.getInsertLength(
-                firstShift.insert
-            );
+            const firstShiftInsertLength = factory.getInsertLength(firstShift.insert);
             if (firstShiftInsertLength.value < secondShift.retain.value) {
                 builder.insert(firstShift.insert);
                 secondShift = {
@@ -884,17 +823,10 @@ const composeCore = <TInsert, TDelete>({
             continue;
         }
 
-        const firstShiftInsertLength = factory.getInsertLength(
-            firstShift.insert
-        );
-        const secondShiftDeleteLength = factory.getDeleteLength(
-            secondShift.delete
-        );
+        const firstShiftInsertLength = factory.getInsertLength(firstShift.insert);
+        const secondShiftDeleteLength = factory.getDeleteLength(secondShift.delete);
         if (firstShiftInsertLength.value < secondShiftDeleteLength.value) {
-            const [, remaining] = splitDeleteCore(
-                secondShift.delete,
-                firstShiftInsertLength
-            );
+            const [, remaining] = splitDeleteCore(secondShift.delete, firstShiftInsertLength);
             firstShift = undefined;
             secondShift = {
                 type: delete$,
@@ -906,10 +838,7 @@ const composeCore = <TInsert, TDelete>({
             firstShift = secondShift = undefined;
             continue;
         }
-        const [, remaining] = splitInsertCore(
-            firstShift.insert,
-            secondShiftDeleteLength
-        );
+        const [, remaining] = splitInsertCore(firstShift.insert, secondShiftDeleteLength);
         firstShift = {
             type: insert$,
             insert: remaining,
@@ -943,14 +872,8 @@ const transformCore = <TInsert, TDelete>({
     },
     ComposeAndTransformError
 > => {
-    const prevLengthOfFirst = prevLengthOfTextOperationUnitArray(
-        $first,
-        factory
-    );
-    const prevLengthOfSecond = prevLengthOfTextOperationUnitArray(
-        $second,
-        factory
-    );
+    const prevLengthOfFirst = prevLengthOfTextOperationUnitArray($first, factory);
+    const prevLengthOfSecond = prevLengthOfTextOperationUnitArray($second, factory);
     if (prevLengthOfFirst < prevLengthOfSecond) {
         return Result.error({ type: secondTooLong });
     }
@@ -961,9 +884,7 @@ const transformCore = <TInsert, TDelete>({
     const first = Array.from($first);
     const second = Array.from($second);
     let firstShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
-    let secondShift:
-        | TextOperationUnit<TInsert, TDelete>
-        | undefined = undefined;
+    let secondShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
 
     const firstPrime = new TextOperationBuilder<TInsert, TDelete>(factory);
     const secondPrime = new TextOperationBuilder<TInsert, TDelete>(factory);
@@ -1027,9 +948,7 @@ const transformCore = <TInsert, TDelete>({
                     secondPrime.retain(firstShift.retain);
                     secondShift = {
                         type: retain,
-                        retain: new PositiveInt(
-                            secondShift.retain.value - firstShift.retain.value
-                        ),
+                        retain: new PositiveInt(secondShift.retain.value - firstShift.retain.value),
                     };
                     firstShift = undefined;
                     continue;
@@ -1044,9 +963,7 @@ const transformCore = <TInsert, TDelete>({
                 secondPrime.retain(secondShift.retain);
                 firstShift = {
                     type: retain,
-                    retain: new PositiveInt(
-                        firstShift.retain.value - secondShift.retain.value
-                    ),
+                    retain: new PositiveInt(firstShift.retain.value - secondShift.retain.value),
                 };
                 secondShift = undefined;
                 continue;
@@ -1054,9 +971,7 @@ const transformCore = <TInsert, TDelete>({
 
             // retain, delete
 
-            const secondShiftDeleteLength = factory.getDeleteLength(
-                secondShift.delete
-            );
+            const secondShiftDeleteLength = factory.getDeleteLength(secondShift.delete);
             if (firstShift.retain.value < secondShiftDeleteLength.value) {
                 const [intersection, newSecondShift] = splitDeleteCore(
                     secondShift.delete,
@@ -1082,9 +997,7 @@ const transformCore = <TInsert, TDelete>({
             secondPrime.delete(secondShift.delete);
             firstShift = {
                 type: retain,
-                retain: new PositiveInt(
-                    firstShift.retain.value - secondShiftDeleteLength.value
-                ),
+                retain: new PositiveInt(firstShift.retain.value - secondShiftDeleteLength.value),
             };
             secondShift = undefined;
             continue;
@@ -1093,9 +1006,7 @@ const transformCore = <TInsert, TDelete>({
         if (secondShift.type === retain) {
             // delete, retain
 
-            const firstShiftDeleteLength = factory.getDeleteLength(
-                firstShift.delete
-            );
+            const firstShiftDeleteLength = factory.getDeleteLength(firstShift.delete);
             if (secondShift.retain.value < firstShiftDeleteLength.value) {
                 const [intersection, newFirstShift] = splitDeleteCore(
                     firstShift.delete,
@@ -1122,27 +1033,18 @@ const transformCore = <TInsert, TDelete>({
             firstShift = undefined;
             secondShift = {
                 type: retain,
-                retain: new PositiveInt(
-                    secondShift.retain.value - firstShiftDeleteLength.value
-                ),
+                retain: new PositiveInt(secondShift.retain.value - firstShiftDeleteLength.value),
             };
             continue;
         }
 
         // delete, delete
 
-        const firstShiftDeleteLength = factory.getDeleteLength(
-            firstShift.delete
-        );
-        const secondShiftDeleteLength = factory.getDeleteLength(
-            secondShift.delete
-        );
+        const firstShiftDeleteLength = factory.getDeleteLength(firstShift.delete);
+        const secondShiftDeleteLength = factory.getDeleteLength(secondShift.delete);
 
         if (firstShiftDeleteLength.value < secondShiftDeleteLength.value) {
-            const [, newSecondShift] = splitDeleteCore(
-                secondShift.delete,
-                firstShiftDeleteLength
-            );
+            const [, newSecondShift] = splitDeleteCore(secondShift.delete, firstShiftDeleteLength);
             firstShift = undefined;
             secondShift = {
                 type: delete$,
@@ -1158,10 +1060,7 @@ const transformCore = <TInsert, TDelete>({
         }
 
         // firstShiftDeleteLength.value > secondShiftDeleteLength.value
-        const [, newFirstShift] = splitDeleteCore(
-            firstShift.delete,
-            secondShiftDeleteLength
-        );
+        const [, newFirstShift] = splitDeleteCore(firstShift.delete, secondShiftDeleteLength);
         firstShift = {
             type: delete$,
             delete: newFirstShift,
@@ -1171,14 +1070,10 @@ const transformCore = <TInsert, TDelete>({
     }
 };
 
-const invertCore = <T1, T2>(
-    source: TextOperation<T1, T2>
-): TextOperation<T2, T1> => {
+const invertCore = <T1, T2>(source: TextOperation<T1, T2>): TextOperation<T2, T1> => {
     return {
         headEdit:
-            source.headEdit === undefined
-                ? source.headEdit
-                : invertEditElement(source.headEdit),
+            source.headEdit === undefined ? source.headEdit : invertEditElement(source.headEdit),
         body: source.body.map(body => invertTextOperationElement(body)),
         tailRetain: source.tailRetain,
     };
@@ -1222,17 +1117,8 @@ export namespace TextTwoWayOperation {
               d: string;
           };
 
-    export const diff = ({
-        first,
-        second,
-    }: {
-        first: string;
-        second: string;
-    }): Operation => {
-        const builder = new TextOperationBuilder<
-            NonEmptyString,
-            NonEmptyString
-        >(twoWayFactory);
+    export const diff = ({ first, second }: { first: string; second: string }): Operation => {
+        const builder = new TextOperationBuilder<NonEmptyString, NonEmptyString>(twoWayFactory);
         const dmp = new diff_match_patch();
         dmp.diff_main(first, second).forEach(([diffType, diff]) => {
             switch (diffType) {
@@ -1261,26 +1147,18 @@ export namespace TextTwoWayOperation {
         ComposeAndTransformError
     > => {
         return transformCore({
-            first: Array.from(
-                new TextOperationBuilder(twoWayFactory, first).toUnits()
-            ),
-            second: Array.from(
-                new TextOperationBuilder(twoWayFactory, second).toUnits()
-            ),
+            first: Array.from(new TextOperationBuilder(twoWayFactory, first).toUnits()),
+            second: Array.from(new TextOperationBuilder(twoWayFactory, second).toUnits()),
             factory: twoWayFactory,
             splitDelete: (target, deleteCount) => [
-                new NonEmptyString(
-                    target.value.substring(0, deleteCount.value)
-                ),
+                new NonEmptyString(target.value.substring(0, deleteCount.value)),
                 new NonEmptyString(target.value.substring(deleteCount.value)),
             ],
         });
     };
 
     export const toUnit = (source: Operation): OperationUnit[] => {
-        return Array.from(
-            new TextOperationBuilder(twoWayFactory, source).toUnits()
-        ).map(unit => {
+        return Array.from(new TextOperationBuilder(twoWayFactory, source).toUnits()).map(unit => {
             switch (unit.type) {
                 case insert$:
                     return {
@@ -1302,10 +1180,7 @@ export namespace TextTwoWayOperation {
     };
 
     export const ofUnit = (source: ReadonlyArray<OperationUnit>): Operation => {
-        const builder = new TextOperationBuilder<
-            NonEmptyString,
-            NonEmptyString
-        >(twoWayFactory);
+        const builder = new TextOperationBuilder<NonEmptyString, NonEmptyString>(twoWayFactory);
         for (const unit of source) {
             if (unit == null) {
                 continue;
@@ -1322,9 +1197,7 @@ export namespace TextTwoWayOperation {
                 }
                 case i: {
                     const insert = unit.i;
-                    const insertAsNonEpmtyString = NonEmptyString.tryCreate(
-                        insert
-                    );
+                    const insertAsNonEpmtyString = NonEmptyString.tryCreate(insert);
                     if (insertAsNonEpmtyString == null) {
                         continue;
                     }
@@ -1392,9 +1265,7 @@ export namespace TextUpOperation {
     }): CustomResult<string, ApplyError<PositiveInt>> => {
         const result = applyAndRestoreCore({
             state: prevState,
-            action: Array.from(
-                new TextOperationBuilder(upFactory, action).toIterable()
-            ),
+            action: Array.from(new TextOperationBuilder(upFactory, action).toIterable()),
             getDeleteLength: del => del,
             mapping: () => OptionModule.some(undefined),
         });
@@ -1416,9 +1287,7 @@ export namespace TextUpOperation {
     > => {
         const result = applyAndRestoreCore({
             state: prevState,
-            action: Array.from(
-                new TextOperationBuilder(upFactory, action).toIterable()
-            ),
+            action: Array.from(new TextOperationBuilder(upFactory, action).toIterable()),
             getDeleteLength: del => del,
             restoreOption: {
                 factory: twoWayFactory,
@@ -1445,12 +1314,8 @@ export namespace TextUpOperation {
         second: Operation;
     }): CustomResult<Operation, ComposeAndTransformError> => {
         return composeCore({
-            first: Array.from(
-                new TextOperationBuilder(upFactory, first).toUnits()
-            ),
-            second: Array.from(
-                new TextOperationBuilder(upFactory, second).toUnits()
-            ),
+            first: Array.from(new TextOperationBuilder(upFactory, first).toUnits()),
+            second: Array.from(new TextOperationBuilder(upFactory, second).toUnits()),
             factory: upFactory,
             splitInsert: (str, index) => [
                 new NonEmptyString(str.value.substring(0, index.value)),
@@ -1474,12 +1339,8 @@ export namespace TextUpOperation {
         ComposeAndTransformError
     > => {
         return transformCore({
-            first: Array.from(
-                new TextOperationBuilder(upFactory, first).toUnits()
-            ),
-            second: Array.from(
-                new TextOperationBuilder(upFactory, second).toUnits()
-            ),
+            first: Array.from(new TextOperationBuilder(upFactory, first).toUnits()),
+            second: Array.from(new TextOperationBuilder(upFactory, second).toUnits()),
             factory: upFactory,
             splitDelete: (target, deleteCount) => [
                 deleteCount,
@@ -1488,14 +1349,11 @@ export namespace TextUpOperation {
         });
     };
 
-    export const invert = (
-        source: Operation
-    ): TextOperation<PositiveInt, NonEmptyString> => invertCore(source);
+    export const invert = (source: Operation): TextOperation<PositiveInt, NonEmptyString> =>
+        invertCore(source);
 
     export const toUnit = (source: Operation): OperationUnit[] => {
-        return Array.from(
-            new TextOperationBuilder(upFactory, source).toUnits()
-        ).map(unit => {
+        return Array.from(new TextOperationBuilder(upFactory, source).toUnits()).map(unit => {
             switch (unit.type) {
                 case insert$:
                     return {
@@ -1519,9 +1377,7 @@ export namespace TextUpOperation {
     export const ofUnit = (
         source: ReadonlyArray<OperationUnit | TextTwoWayOperation.OperationUnit>
     ): Operation => {
-        const builder = new TextOperationBuilder<NonEmptyString, PositiveInt>(
-            upFactory
-        );
+        const builder = new TextOperationBuilder<NonEmptyString, PositiveInt>(upFactory);
         for (const unit of source) {
             if (unit == null) {
                 continue;
@@ -1538,9 +1394,7 @@ export namespace TextUpOperation {
                 }
                 case i: {
                     const insert = unit.i;
-                    const insertAsNonEmptyString = NonEmptyString.tryCreate(
-                        insert
-                    );
+                    const insertAsNonEmptyString = NonEmptyString.tryCreate(insert);
                     if (insertAsNonEmptyString == null) {
                         continue;
                     }
@@ -1548,8 +1402,7 @@ export namespace TextUpOperation {
                     break;
                 }
                 case d: {
-                    const del =
-                        typeof unit.d === 'string' ? unit.d.length : unit.d;
+                    const del = typeof unit.d === 'string' ? unit.d.length : unit.d;
                     const delAsPositiveInt = PositiveInt.tryCreate(del);
                     if (delAsPositiveInt == null) {
                         continue;
@@ -1624,12 +1477,8 @@ export namespace TextDownOperation {
         second: Operation;
     }): CustomResult<Operation, ComposeAndTransformError> => {
         return composeCore({
-            first: Array.from(
-                new TextOperationBuilder(downFactory, first).toUnits()
-            ),
-            second: Array.from(
-                new TextOperationBuilder(downFactory, second).toUnits()
-            ),
+            first: Array.from(new TextOperationBuilder(downFactory, first).toUnits()),
+            second: Array.from(new TextOperationBuilder(downFactory, second).toUnits()),
             factory: downFactory,
             splitInsert: (target, deleteCount) => [
                 deleteCount,
@@ -1642,14 +1491,11 @@ export namespace TextDownOperation {
         });
     };
 
-    export const invert = (
-        source: Operation
-    ): TextOperation<NonEmptyString, PositiveInt> => invertCore(source);
+    export const invert = (source: Operation): TextOperation<NonEmptyString, PositiveInt> =>
+        invertCore(source);
 
     export const toUnit = (source: Operation): OperationUnit[] => {
-        return Array.from(
-            new TextOperationBuilder(downFactory, source).toUnits()
-        ).map(unit => {
+        return Array.from(new TextOperationBuilder(downFactory, source).toUnits()).map(unit => {
             switch (unit.type) {
                 case insert$:
                     return {
@@ -1673,9 +1519,7 @@ export namespace TextDownOperation {
     export const ofUnit = (
         source: ReadonlyArray<OperationUnit | TextTwoWayOperation.OperationUnit>
     ): Operation => {
-        const builder = new TextOperationBuilder<PositiveInt, NonEmptyString>(
-            downFactory
-        );
+        const builder = new TextOperationBuilder<PositiveInt, NonEmptyString>(downFactory);
         for (const unit of source) {
             if (unit == null) {
                 continue;
@@ -1691,8 +1535,7 @@ export namespace TextDownOperation {
                     break;
                 }
                 case i: {
-                    const insert =
-                        typeof unit.i === 'string' ? unit.i.length : unit.i;
+                    const insert = typeof unit.i === 'string' ? unit.i.length : unit.i;
                     const insertAsPositiveInt = PositiveInt.tryCreate(insert);
                     if (insertAsPositiveInt == null) {
                         continue;
@@ -1714,16 +1557,8 @@ export namespace TextDownOperation {
         return builder.build();
     };
 
-    export const diff = ({
-        first,
-        second,
-    }: {
-        first: string;
-        second: string;
-    }): Operation => {
-        const builder = new TextOperationBuilder<PositiveInt, NonEmptyString>(
-            downFactory
-        );
+    export const diff = ({ first, second }: { first: string; second: string }): Operation => {
+        const builder = new TextOperationBuilder<PositiveInt, NonEmptyString>(downFactory);
         const dmp = new diff_match_patch();
         dmp.diff_main(first, second).forEach(([diffType, diff]) => {
             switch (diffType) {
