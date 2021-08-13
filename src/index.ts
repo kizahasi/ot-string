@@ -1,27 +1,6 @@
 import { diff_match_patch } from 'diff-match-patch';
 import { CustomResult, Result } from '@kizahasi/result';
-
-type Some<T> = {
-    hasValue: true;
-    value: T;
-};
-
-type None = {
-    hasValue: false;
-};
-
-type Option<T> = Some<T> | None;
-
-const OptionModule = {
-    some: <T>(value: T): Some<T> => ({ hasValue: true, value }),
-    none: { hasValue: false } as None,
-    get: <T>(source: Option<T>): T => {
-        if (!source.hasValue) {
-            throw new Error('not hasValue');
-        }
-        return source.value;
-    },
-};
+import { Option } from '@kizahasi/option';
 
 export class PositiveInt {
     public constructor(private source: number) {
@@ -626,7 +605,7 @@ const applyAndRestoreCore = <TDelete1, TDelete2>({
                         expected: act.edit.delete,
                         actual: deleted,
                     });
-                    if (!mapped.hasValue) {
+                    if (mapped.isNone) {
                         return Result.error({
                             type: deleteStringNotMatch,
                             startCharIndex: cursor,
@@ -1267,7 +1246,7 @@ export namespace TextUpOperation {
             state: prevState,
             action: Array.from(new TextOperationBuilder(upFactory, action).toIterable()),
             getDeleteLength: del => del,
-            mapping: () => OptionModule.some(undefined),
+            mapping: () => Option.some(undefined),
         });
         if (result.isError) {
             return result;
@@ -1292,7 +1271,7 @@ export namespace TextUpOperation {
             restoreOption: {
                 factory: twoWayFactory,
             },
-            mapping: ({ actual }) => OptionModule.some(actual),
+            mapping: ({ actual }) => Option.some(actual),
         });
         if (result.isError) {
             return result;
