@@ -15,4 +15,3 @@ jobs:
                   always-auth: true
             - name: can publish
               run: npx can-npm-publish --verbose
-
