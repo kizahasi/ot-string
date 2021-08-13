@@ -730,10 +730,15 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
-"@kizahasi/result@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.npmjs.org/@kizahasi/result/-/result-0.3.0.tgz"
-  integrity sha512-hS1wjM91tHgvu66vTkKX0x4Qbyqr45d+90Y2c1Nv2e5fR9KXukmls1jRv/aW/yZugMnNUbLMEvVbsCcpfJZQSw==
+"@kizahasi/option@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@kizahasi/option/-/option-0.1.3.tgz#7652a03eed1e3d69b984310759585202869ede20"
+  integrity sha512-hURh7Lz0zxgTPZlWiEj2Q/SC8ebZFXKMsiDaPDuyJlDI6QvdlEUp81DahKl5Njkq/CS5+d1bpreNj/uQk4vLOg==
+
+"@kizahasi/result@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@kizahasi/result/-/result-1.0.0.tgz#702660f8f0a5c67a91b737c7aea319448c3dd54c"
+  integrity sha512-od5eGg6fe2lLmh6+HDKt2qXe9EKn1UZ1EWdT+O5JOT6asl8IHhvGxIpLdN9q7PcQJdzck8lc6ea18aZYWD1FyQ==
 
 "@nodelib/fs.scandir@2.1.4":
   version "2.1.4"
@@ -1884,6 +1889,11 @@ human-signals@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/human-signals/-/human-signals-2.1.0.tgz"
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
+
+husky@^7.0.0:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/husky/-/husky-7.0.1.tgz#579f4180b5da4520263e8713cc832942b48e1f1c"
+  integrity sha512-gceRaITVZ+cJH9sNHqx5tFwbzlLCVxtVZcusME8JYQ8Edy5mpGDOqD8QBCdMhpyo9a+JXddnujQ4rpY2Ff9SJA==
 
 iconv-lite@0.4.24:
   version "0.4.24"

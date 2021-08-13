@@ -1,27 +1,6 @@
 import { diff_match_patch } from 'diff-match-patch';
-import { CustomResult, Result } from '@kizahasi/result';
-
-type Some<T> = {
-    hasValue: true;
-    value: T;
-};
-
-type None = {
-    hasValue: false;
-};
-
-type Option<T> = Some<T> | None;
-
-const OptionModule = {
-    some: <T>(value: T): Some<T> => ({ hasValue: true, value }),
-    none: { hasValue: false } as None,
-    get: <T>(source: Option<T>): T => {
-        if (!source.hasValue) {
-            throw new Error('not hasValue');
-        }
-        return source.value;
-    },
-};
+import { Result } from '@kizahasi/result';
+import { Option } from '@kizahasi/option';
 
 export class PositiveInt {
     public constructor(private source: number) {
@@ -581,7 +560,7 @@ const applyAndRestoreCore = <TDelete1, TDelete2>({
     // Noneを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にSomeを返せばよい。
     // restoreOption === undefinedのとき、TDelete2は使われないのでOkの値は何でもいい。
     mapping: (params: { expected: TDelete1; actual: NonEmptyString }) => Option<TDelete2>;
-}): CustomResult<
+}): Result<
     { newState: string; restored?: TextOperation<NonEmptyString, TDelete2> },
     ApplyError<TDelete1>
 > => {
@@ -626,7 +605,7 @@ const applyAndRestoreCore = <TDelete1, TDelete2>({
                         expected: act.edit.delete,
                         actual: deleted,
                     });
-                    if (!mapped.hasValue) {
+                    if (mapped.isNone) {
                         return Result.error({
                             type: deleteStringNotMatch,
                             startCharIndex: cursor,
@@ -681,7 +660,7 @@ const composeCore = <TInsert, TDelete>({
     splitInsert: (target: TInsert, index: PositiveInt) => [TInsert, TInsert];
 
     factory: Factory<TInsert, TDelete>;
-}): CustomResult<TextOperation<TInsert, TDelete>, ComposeAndTransformError> => {
+}): Result<TextOperation<TInsert, TDelete>, ComposeAndTransformError> => {
     const nextLengthOfFirst = nextLengthOfTextOperationUnitArray($first, factory);
     const prevLengthOfSecond = prevLengthOfTextOperationUnitArray($second, factory);
     if (nextLengthOfFirst < prevLengthOfSecond) {
@@ -865,7 +844,7 @@ const transformCore = <TInsert, TDelete>({
     splitDelete: (target: TDelete, index: PositiveInt) => [TDelete, TDelete];
 
     factory: Factory<TInsert, TDelete>;
-}): CustomResult<
+}): Result<
     {
         firstPrime: TextOperation<TInsert, TDelete>;
         secondPrime: TextOperation<TInsert, TDelete>;
@@ -1142,10 +1121,7 @@ export namespace TextTwoWayOperation {
     }: {
         first: Operation;
         second: Operation;
-    }): CustomResult<
-        { firstPrime: Operation; secondPrime: Operation },
-        ComposeAndTransformError
-    > => {
+    }): Result<{ firstPrime: Operation; secondPrime: Operation }, ComposeAndTransformError> => {
         return transformCore({
             first: Array.from(new TextOperationBuilder(twoWayFactory, first).toUnits()),
             second: Array.from(new TextOperationBuilder(twoWayFactory, second).toUnits()),
@@ -1262,12 +1238,12 @@ export namespace TextUpOperation {
     }: {
         prevState: string;
         action: Operation;
-    }): CustomResult<string, ApplyError<PositiveInt>> => {
+    }): Result<string, ApplyError<PositiveInt>> => {
         const result = applyAndRestoreCore({
             state: prevState,
             action: Array.from(new TextOperationBuilder(upFactory, action).toIterable()),
             getDeleteLength: del => del,
-            mapping: () => OptionModule.some(undefined),
+            mapping: () => Option.some(undefined),
         });
         if (result.isError) {
             return result;
@@ -1281,7 +1257,7 @@ export namespace TextUpOperation {
     }: {
         prevState: string;
         action: Operation;
-    }): CustomResult<
+    }): Result<
         { nextState: string; restored: TextTwoWayOperation.Operation },
         ApplyError<PositiveInt>
     > => {
@@ -1292,7 +1268,7 @@ export namespace TextUpOperation {
             restoreOption: {
                 factory: twoWayFactory,
             },
-            mapping: ({ actual }) => OptionModule.some(actual),
+            mapping: ({ actual }) => Option.some(actual),
         });
         if (result.isError) {
             return result;
@@ -1312,7 +1288,7 @@ export namespace TextUpOperation {
     }: {
         first: Operation;
         second: Operation;
-    }): CustomResult<Operation, ComposeAndTransformError> => {
+    }): Result<Operation, ComposeAndTransformError> => {
         return composeCore({
             first: Array.from(new TextOperationBuilder(upFactory, first).toUnits()),
             second: Array.from(new TextOperationBuilder(upFactory, second).toUnits()),
@@ -1334,10 +1310,7 @@ export namespace TextUpOperation {
     }: {
         first: Operation;
         second: Operation;
-    }): CustomResult<
-        { firstPrime: Operation; secondPrime: Operation },
-        ComposeAndTransformError
-    > => {
+    }): Result<{ firstPrime: Operation; secondPrime: Operation }, ComposeAndTransformError> => {
         return transformCore({
             first: Array.from(new TextOperationBuilder(upFactory, first).toUnits()),
             second: Array.from(new TextOperationBuilder(upFactory, second).toUnits()),
@@ -1439,7 +1412,7 @@ export namespace TextDownOperation {
     }: {
         nextState: string;
         action: Operation;
-    }): CustomResult<string, ApplyError<PositiveInt>> => {
+    }): Result<string, ApplyError<PositiveInt>> => {
         return TextUpOperation.apply({
             prevState: nextState,
             action: invertCore(action),
@@ -1452,7 +1425,7 @@ export namespace TextDownOperation {
     }: {
         nextState: string;
         action: Operation;
-    }): CustomResult<
+    }): Result<
         { prevState: string; restored: TextTwoWayOperation.Operation },
         ApplyError<PositiveInt>
     > => {
@@ -1475,7 +1448,7 @@ export namespace TextDownOperation {
     }: {
         first: Operation;
         second: Operation;
-    }): CustomResult<Operation, ComposeAndTransformError> => {
+    }): Result<Operation, ComposeAndTransformError> => {
         return composeCore({
             first: Array.from(new TextOperationBuilder(downFactory, first).toUnits()),
             second: Array.from(new TextOperationBuilder(downFactory, second).toUnits()),

@@ -1,8 +1,14 @@
 # @kizahasi/ot-string
 
+![GitHub](https://img.shields.io/github/license/kizahasi/ot-string) [![npm version](https://img.shields.io/npm/v/@kizahasi/ot-string.svg?style=flat)](https://www.npmjs.com/package/@kizahasi/ot-string) ![minified size](https://img.shields.io/bundlephobia/min/@kizahasi/ot-string) [![CI](https://github.com/kizahasi/ot-string/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/kizahasi/ot-string/actions/workflows/main.yml) [![publish](https://github.com/kizahasi/ot-string/actions/workflows/publish.yml/badge.svg?branch=release)](https://github.com/kizahasi/ot-string/actions/workflows/publish.yml)
+
 Operational Transfomation library for string.
 
-## Example
+## Installation
+
+Run `npm install @kizahasi/ot-string` or `yarn add @kizahasi/ot-string`
+
+## Usage
 
 ```typescript
 import { TextTwoWayOperation, TextUpOperation, TextDownOperation } from '@kizahasi/ot-string';
