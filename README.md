@@ -14,16 +14,12 @@ Run `npm install @kizahasi/ot-string` or `yarn add @kizahasi/ot-string`
 import { TextTwoWayOperation, TextUpOperation, TextDownOperation } from '@kizahasi/ot-string';
 
 // Gets diff of two string (diff-match-patch is used)
-const twoWayOperation: TextTwoWayOperation.Operation = TextTwoWayOperation.diff(
-    {
-        first: 'Roses are red',
-        second: 'Violets are blue',
-    }
-);
+const twoWayOperation: TextTwoWayOperation.Operation = TextTwoWayOperation.diff({
+    first: 'Roses are red',
+    second: 'Violets are blue',
+});
 
-const upOperation: TextUpOperation.Operation = TextTwoWayOperation.toUpOperation(
-    twoWayOperation
-);
+const upOperation: TextUpOperation.Operation = TextTwoWayOperation.toUpOperation(twoWayOperation);
 const second = TextUpOperation.apply({
     prevState: 'Roses are red',
     action: upOperation,
@@ -32,9 +28,8 @@ const second = TextUpOperation.apply({
 { isError: false, value: 'Violets are blue' }
 */
 
-const downOperation: TextDownOperation.Operation = TextTwoWayOperation.toDownOperation(
-    twoWayOperation
-);
+const downOperation: TextDownOperation.Operation =
+    TextTwoWayOperation.toDownOperation(twoWayOperation);
 const first = TextDownOperation.applyBack({
     nextState: 'Violets are blue',
     action: downOperation,
@@ -89,5 +84,5 @@ const downOperation2 = TextDownOperation.ofUnit(downOperationAsUnitArray);
 
 ## Issues
 
-- Because this library uses Typescipt namespace, tree-shaking may not work well to reduce the code size.
-- Some functions are not implemented (e.g. TextUpOperation.diff).
+-   Because this library uses Typescipt namespace, tree-shaking may not work well to reduce the code size.
+-   Some functions are not implemented (e.g. TextUpOperation.diff).
