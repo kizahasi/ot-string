@@ -630,13 +630,14 @@ const applyAndRestoreCore = <TDelete1, TDelete2>({
 const secondTooShort = 'secondTooShort';
 const secondTooLong = 'secondTooLong';
 
-export type ComposeAndTransformError =
-    | {
-          type: typeof secondTooShort;
-      }
-    | {
-          type: typeof secondTooLong;
-      };
+type ComposeAndTransformErrorBase = {
+    type: typeof secondTooShort | typeof secondTooLong;
+};
+
+export type ComposeAndTransformError<TInsert, TDelete> = ComposeAndTransformErrorBase & {
+    first: TextOperation<TInsert, TDelete>;
+    second: TextOperation<TInsert, TDelete>;
+};
 
 // 実装にあたって https://github.com/Operational-Transformation/ot.js/blob/e9a3a0e214dd6c001e25515274bae0842a8415f2/lib/text-operation.js#L238 を参考にした
 const composeCore = <TInsert, TDelete>({
@@ -660,7 +661,7 @@ const composeCore = <TInsert, TDelete>({
     splitInsert: (target: TInsert, index: PositiveInt) => [TInsert, TInsert];
 
     factory: Factory<TInsert, TDelete>;
-}): Result<TextOperation<TInsert, TDelete>, ComposeAndTransformError> => {
+}): Result<TextOperation<TInsert, TDelete>, ComposeAndTransformErrorBase> => {
     const nextLengthOfFirst = nextLengthOfTextOperationUnitArray($first, factory);
     const prevLengthOfSecond = prevLengthOfTextOperationUnitArray($second, factory);
     if (nextLengthOfFirst < prevLengthOfSecond) {
@@ -849,7 +850,7 @@ const transformCore = <TInsert, TDelete>({
         firstPrime: TextOperation<TInsert, TDelete>;
         secondPrime: TextOperation<TInsert, TDelete>;
     },
-    ComposeAndTransformError
+    ComposeAndTransformErrorBase
 > => {
     const prevLengthOfFirst = prevLengthOfTextOperationUnitArray($first, factory);
     const prevLengthOfSecond = prevLengthOfTextOperationUnitArray($second, factory);
@@ -1121,8 +1122,11 @@ export namespace TextTwoWayOperation {
     }: {
         first: Operation;
         second: Operation;
-    }): Result<{ firstPrime: Operation; secondPrime: Operation }, ComposeAndTransformError> => {
-        return transformCore({
+    }): Result<
+        { firstPrime: Operation; secondPrime: Operation },
+        ComposeAndTransformError<NonEmptyString, NonEmptyString>
+    > => {
+        const result = transformCore({
             first: Array.from(new TextOperationBuilder(twoWayFactory, first).toUnits()),
             second: Array.from(new TextOperationBuilder(twoWayFactory, second).toUnits()),
             factory: twoWayFactory,
@@ -1131,6 +1135,14 @@ export namespace TextTwoWayOperation {
                 new NonEmptyString(target.value.substring(deleteCount.value)),
             ],
         });
+        if (result.isError) {
+            return Result.error({
+                ...result.error,
+                first,
+                second,
+            });
+        }
+        return result;
     };
 
     export const toUnit = (source: Operation): OperationUnit[] => {
@@ -1288,8 +1300,8 @@ export namespace TextUpOperation {
     }: {
         first: Operation;
         second: Operation;
-    }): Result<Operation, ComposeAndTransformError> => {
-        return composeCore({
+    }): Result<Operation, ComposeAndTransformError<NonEmptyString, PositiveInt>> => {
+        const result = composeCore({
             first: Array.from(new TextOperationBuilder(upFactory, first).toUnits()),
             second: Array.from(new TextOperationBuilder(upFactory, second).toUnits()),
             factory: upFactory,
@@ -1302,6 +1314,14 @@ export namespace TextUpOperation {
                 new PositiveInt(target.value - deleteCount.value),
             ],
         });
+        if (result.isError) {
+            return Result.error({
+                ...result.error,
+                first,
+                second,
+            });
+        }
+        return result;
     };
 
     export const transform = ({
@@ -1310,8 +1330,11 @@ export namespace TextUpOperation {
     }: {
         first: Operation;
         second: Operation;
-    }): Result<{ firstPrime: Operation; secondPrime: Operation }, ComposeAndTransformError> => {
-        return transformCore({
+    }): Result<
+        { firstPrime: Operation; secondPrime: Operation },
+        ComposeAndTransformError<NonEmptyString, PositiveInt>
+    > => {
+        const result = transformCore({
             first: Array.from(new TextOperationBuilder(upFactory, first).toUnits()),
             second: Array.from(new TextOperationBuilder(upFactory, second).toUnits()),
             factory: upFactory,
@@ -1320,6 +1343,14 @@ export namespace TextUpOperation {
                 new PositiveInt(target.value - deleteCount.value),
             ],
         });
+        if (result.isError) {
+            return Result.error({
+                ...result.error,
+                first,
+                second,
+            });
+        }
+        return result;
     };
 
     export const invert = (source: Operation): TextOperation<PositiveInt, NonEmptyString> =>
@@ -1448,8 +1479,8 @@ export namespace TextDownOperation {
     }: {
         first: Operation;
         second: Operation;
-    }): Result<Operation, ComposeAndTransformError> => {
-        return composeCore({
+    }): Result<Operation, ComposeAndTransformError<PositiveInt, NonEmptyString>> => {
+        const result = composeCore({
             first: Array.from(new TextOperationBuilder(downFactory, first).toUnits()),
             second: Array.from(new TextOperationBuilder(downFactory, second).toUnits()),
             factory: downFactory,
@@ -1462,6 +1493,14 @@ export namespace TextDownOperation {
                 new NonEmptyString(str.value.substring(index.value)),
             ],
         });
+        if (result.isError) {
+            return Result.error({
+                ...result.error,
+                first,
+                second,
+            });
+        }
+        return result;
     };
 
     export const invert = (source: Operation): TextOperation<NonEmptyString, PositiveInt> =>
