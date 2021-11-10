@@ -1,4 +1,13 @@
 *.log
 .DS_Store
 node_modules
-dist
+/dist
+/coverage
+
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
