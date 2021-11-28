@@ -1160,7 +1160,7 @@ __metadata:
     diff-match-patch: ^1.0.5
     eslint: 8.3.0
     eslint-config-prettier: 8.3.0
-    fast-check: 2.19.0
+    fast-check: 2.20.0
     husky: 7.0.4
     jest: 27.3.1
     prettier: 2.4.1
@@ -2772,12 +2772,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-check@npm:2.19.0":
-  version: 2.19.0
-  resolution: "fast-check@npm:2.19.0"
+"fast-check@npm:2.20.0":
+  version: 2.20.0
+  resolution: "fast-check@npm:2.20.0"
   dependencies:
     pure-rand: ^5.0.0
-  checksum: 93fd9b37c4ee54ba43fdf58c436290c304e6c7ea402b4c54dbbd7039717bed2f03ea5924aaaa36283fd51ecf6bebe622d7190942f9967c1d594d342544f16e73
+  checksum: 2f8c0bbb089556e51ad9669b21d14611e557ddd11037b26a5a0a9c32c41b23f792cf4c13b58083c735261b0ce8e840c865ea25dc07651deb2045c2d73b63bf57
   languageName: node
   linkType: hard
 
