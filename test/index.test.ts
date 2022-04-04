@@ -18,17 +18,17 @@ import fc from 'fast-check';
 
 it('tests diff and apply', () => {
     fc.assert(
-        fc.property(fc.string(), fc.string(), (first, second) => {
-            const twoWayOperation = diff({ first, second });
+        fc.property(fc.string(), fc.string(), (prevState, nextState) => {
+            const twoWayOperation = diff({ prevState, nextState });
             const upOperation = toUpOperation(twoWayOperation);
             const actual = apply({
-                prevState: first,
-                action: upOperation,
+                prevState: prevState,
+                upOperation: upOperation,
             });
             if (actual.isError) {
                 throw actual.error;
             }
-            expect(actual.value).toEqual(second);
+            expect(actual.value).toEqual(nextState);
         })
     );
 });
@@ -47,7 +47,7 @@ test.each(['xx', 'xxxx'])('tests apply but text is too short/long', (text: strin
     };
     const actual = apply({
         prevState: text,
-        action: operation,
+        upOperation: operation,
     });
     expect(actual.isError).toBe(true);
 });
@@ -64,25 +64,25 @@ it('tests apply but text is too short', () => {
     };
     const actual = apply({
         prevState: text,
-        action: operation,
+        upOperation: operation,
     });
     expect(actual.isError).toBe(true);
 });
 
 it('tests applyAndRestore', () => {
     fc.assert(
-        fc.property(fc.string(), fc.string(), (first, second) => {
-            const twoWayOperation = diff({ first, second });
+        fc.property(fc.string(), fc.string(), (prevState, nextState) => {
+            const twoWayOperation = diff({ prevState, nextState });
             const upOperation = toUpOperation(twoWayOperation);
             const actual = applyAndRestore({
-                prevState: first,
-                action: upOperation,
+                prevState: prevState,
+                upOperation: upOperation,
             });
             if (actual.isError) {
                 throw actual.error;
             }
             expect(actual.value).toEqual({
-                nextState: second,
+                nextState: nextState,
                 restored: twoWayOperation,
             });
         })
@@ -92,8 +92,8 @@ it('tests applyAndRestore', () => {
 it('tests compose', () => {
     fc.assert(
         fc.property(fc.string(), fc.string(), fc.string(), (a, b, c) => {
-            const firstPair = { first: a, second: b };
-            const secondPair = { first: b, second: c };
+            const firstPair = { prevState: a, nextState: b };
+            const secondPair = { prevState: b, nextState: c };
             const first = toUpOperation(diff(firstPair));
             const second = toUpOperation(diff(secondPair));
             const composed = composeUpOperation({ first, second });
@@ -102,15 +102,15 @@ it('tests compose', () => {
             }
             const expected = (() => {
                 const firstApplied = apply({
-                    prevState: firstPair.first,
-                    action: first,
+                    prevState: firstPair.prevState,
+                    upOperation: first,
                 });
                 if (firstApplied.isError) {
                     throw firstApplied.error;
                 }
                 const secondApplied = apply({
                     prevState: firstApplied.value,
-                    action: second,
+                    upOperation: second,
                 });
                 if (secondApplied.isError) {
                     throw secondApplied.error;
@@ -118,8 +118,8 @@ it('tests compose', () => {
                 return secondApplied.value;
             })();
             const actual = apply({
-                prevState: firstPair.first,
-                action: composed.value,
+                prevState: firstPair.prevState,
+                upOperation: composed.value,
             });
             if (actual.isError) {
                 throw actual.error;
@@ -132,8 +132,8 @@ it('tests compose', () => {
 it('tests transform', () => {
     fc.assert(
         fc.property(fc.string(), fc.string(), fc.string(), (root, a, b) => {
-            const firstPair = { first: root, second: a };
-            const secondPair = { first: root, second: b };
+            const firstPair = { prevState: root, nextState: a };
+            const secondPair = { prevState: root, nextState: b };
             const first = diff(firstPair);
             const second = diff(secondPair);
             const xform = transformTwoWayOperation({
@@ -146,21 +146,21 @@ it('tests transform', () => {
             const result1 = (() => {
                 const firstApplied = apply({
                     prevState: root,
-                    action: toUpOperation(first),
+                    upOperation: toUpOperation(first),
                 });
                 if (firstApplied.isError) {
                     throw firstApplied.error;
                 }
                 const secondApplied = apply({
                     prevState: firstApplied.value,
-                    action: toUpOperation(xform.value.secondPrime),
+                    upOperation: toUpOperation(xform.value.secondPrime),
                 });
                 if (secondApplied.isError) {
                     throw secondApplied.error;
                 }
                 const firstAppliedPrime = apply({
                     prevState: secondApplied.value,
-                    action: invertDownOperation(toDownOperation(xform.value.secondPrime)),
+                    upOperation: invertDownOperation(toDownOperation(xform.value.secondPrime)),
                 });
                 expect(firstApplied).toEqual(firstAppliedPrime);
                 return secondApplied.value;
@@ -168,21 +168,21 @@ it('tests transform', () => {
             const result2 = (() => {
                 const secondApplied = apply({
                     prevState: root,
-                    action: toUpOperation(second),
+                    upOperation: toUpOperation(second),
                 });
                 if (secondApplied.isError) {
                     throw secondApplied.error;
                 }
                 const firstApplied = apply({
                     prevState: secondApplied.value,
-                    action: toUpOperation(xform.value.firstPrime),
+                    upOperation: toUpOperation(xform.value.firstPrime),
                 });
                 if (firstApplied.isError) {
                     throw firstApplied.error;
                 }
                 const secondAppliedPrime = apply({
                     prevState: firstApplied.value,
-                    action: invertDownOperation(toDownOperation(xform.value.firstPrime)),
+                    upOperation: invertDownOperation(toDownOperation(xform.value.firstPrime)),
                 });
                 expect(secondApplied).toEqual(secondAppliedPrime);
                 return firstApplied.value;

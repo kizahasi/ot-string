@@ -9,8 +9,8 @@ import { twoWayFactory } from '../util/factory';
 import { TextOperation, mapTextOperation } from '../util/textOperation';
 import { TextOperationBuilder } from '../util/textOperationBuilder';
 
-export type Operation = TextOperation<NonEmptyString, NonEmptyString>;
-export type OperationUnit =
+export type TwoWayOperation = TextOperation<NonEmptyString, NonEmptyString>;
+export type TwoWayOperationUnit =
     | {
           t: typeof r;
           r: number;
@@ -24,10 +24,16 @@ export type OperationUnit =
           d: string;
       };
 
-export const diff = ({ first, second }: { first: string; second: string }): Operation => {
+export const diff = ({
+    prevState,
+    nextState,
+}: {
+    prevState: string;
+    nextState: string;
+}): TwoWayOperation => {
     const builder = new TextOperationBuilder<NonEmptyString, NonEmptyString>(twoWayFactory);
     const dmp = new diff_match_patch();
-    dmp.diff_main(first, second).forEach(([diffType, diff]) => {
+    dmp.diff_main(prevState, nextState).forEach(([diffType, diff]) => {
         switch (diffType) {
             case -1:
                 builder.delete(new NonEmptyString(diff));
@@ -47,10 +53,10 @@ export const transform = ({
     first,
     second,
 }: {
-    first: Operation;
-    second: Operation;
+    first: TwoWayOperation;
+    second: TwoWayOperation;
 }): Result<
-    { firstPrime: Operation; secondPrime: Operation },
+    { firstPrime: TwoWayOperation; secondPrime: TwoWayOperation },
     ComposeAndTransformError<NonEmptyString, NonEmptyString>
 > => {
     const result = transformCore({
@@ -72,7 +78,7 @@ export const transform = ({
     return result;
 };
 
-export const toUnit = (source: Operation): OperationUnit[] => {
+export const toUnit = (source: TwoWayOperation): TwoWayOperationUnit[] => {
     return Array.from(new TextOperationBuilder(twoWayFactory, source).toUnits()).map(unit => {
         switch (unit.type) {
             case insert$:
@@ -94,7 +100,7 @@ export const toUnit = (source: Operation): OperationUnit[] => {
     });
 };
 
-export const ofUnit = (source: ReadonlyArray<OperationUnit>): Operation => {
+export const ofUnit = (source: ReadonlyArray<TwoWayOperationUnit>): TwoWayOperation => {
     const builder = new TextOperationBuilder<NonEmptyString, NonEmptyString>(twoWayFactory);
     for (const unit of source) {
         if (unit == null) {
@@ -133,7 +139,9 @@ export const ofUnit = (source: ReadonlyArray<OperationUnit>): Operation => {
     return builder.build();
 };
 
-export const toUpOperation = (source: Operation): TextOperation<NonEmptyString, PositiveInt> => {
+export const toUpOperation = (
+    source: TwoWayOperation
+): TextOperation<NonEmptyString, PositiveInt> => {
     return mapTextOperation({
         source,
         mapInsert: insert => insert,
@@ -141,7 +149,9 @@ export const toUpOperation = (source: Operation): TextOperation<NonEmptyString, 
     });
 };
 
-export const toDownOperation = (source: Operation): TextOperation<PositiveInt, NonEmptyString> => {
+export const toDownOperation = (
+    source: TwoWayOperation
+): TextOperation<PositiveInt, NonEmptyString> => {
     return mapTextOperation({
         source,
         mapInsert: insert => insert.length,

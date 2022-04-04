@@ -10,8 +10,8 @@ import { TextOperationBuilder } from '../util/textOperationBuilder';
 import * as TextTwoWayOperation from './twoWayOperation';
 import * as TextUpOperation from './upOperation';
 
-export type Operation = TextOperation<PositiveInt, NonEmptyString>;
-export type OperationUnit =
+export type DownOperation = TextOperation<PositiveInt, NonEmptyString>;
+export type DownOperationUnit =
     | {
           t: typeof r;
           r: number;
@@ -27,30 +27,30 @@ export type OperationUnit =
 
 export const applyBack = ({
     nextState,
-    action,
+    downOperation,
 }: {
     nextState: string;
-    action: Operation;
+    downOperation: DownOperation;
 }): Result<string, ApplyError<PositiveInt>> => {
     return TextUpOperation.apply({
         prevState: nextState,
-        action: invertCore(action),
+        upOperation: invertCore(downOperation),
     });
 };
 
 export const applyBackAndRestore = ({
     nextState,
-    action,
+    downOperation,
 }: {
     nextState: string;
-    action: Operation;
+    downOperation: DownOperation;
 }): Result<
-    { prevState: string; restored: TextTwoWayOperation.Operation },
+    { prevState: string; restored: TextTwoWayOperation.TwoWayOperation },
     ApplyError<PositiveInt>
 > => {
     const invertedResult = TextUpOperation.applyAndRestore({
         prevState: nextState,
-        action: invertCore(action),
+        upOperation: invertCore(downOperation),
     });
     if (invertedResult.isError) {
         return invertedResult;
@@ -65,9 +65,9 @@ export const compose = ({
     first,
     second,
 }: {
-    first: Operation;
-    second: Operation;
-}): Result<Operation, ComposeAndTransformError<PositiveInt, NonEmptyString>> => {
+    first: DownOperation;
+    second: DownOperation;
+}): Result<DownOperation, ComposeAndTransformError<PositiveInt, NonEmptyString>> => {
     const result = composeCore({
         first: Array.from(new TextOperationBuilder(downFactory, first).toUnits()),
         second: Array.from(new TextOperationBuilder(downFactory, second).toUnits()),
@@ -91,10 +91,10 @@ export const compose = ({
     return result;
 };
 
-export const invert = (source: Operation): TextOperation<NonEmptyString, PositiveInt> =>
+export const invert = (source: DownOperation): TextOperation<NonEmptyString, PositiveInt> =>
     invertCore(source);
 
-export const toUnit = (source: Operation): OperationUnit[] => {
+export const toUnit = (source: DownOperation): DownOperationUnit[] => {
     return Array.from(new TextOperationBuilder(downFactory, source).toUnits()).map(unit => {
         switch (unit.type) {
             case insert$:
@@ -117,8 +117,8 @@ export const toUnit = (source: Operation): OperationUnit[] => {
 };
 
 export const ofUnit = (
-    source: ReadonlyArray<OperationUnit | TextTwoWayOperation.OperationUnit>
-): Operation => {
+    source: ReadonlyArray<DownOperationUnit | TextTwoWayOperation.TwoWayOperationUnit>
+): DownOperation => {
     const builder = new TextOperationBuilder<PositiveInt, NonEmptyString>(downFactory);
     for (const unit of source) {
         if (unit == null) {

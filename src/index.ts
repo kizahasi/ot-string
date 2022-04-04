@@ -11,8 +11,8 @@ export {
     ComposeAndTransformError,
 } from './internal/error';
 export {
-    Operation as TwoWayOperation,
-    OperationUnit as TwoWayOperationUnit,
+    TwoWayOperation,
+    TwoWayOperationUnit,
     toDownOperation,
     toUpOperation,
     toUnit as toTwoWayOperationUnit,
@@ -21,23 +21,23 @@ export {
     transform as transformTwoWayOperation,
 } from './internal/operation/twoWayOperation';
 export {
-    Operation as UpOperation,
-    OperationUnit as UpOperationUnit,
+    UpOperation,
+    UpOperationUnit,
     apply,
     applyAndRestore,
     invert as invertUpOperation,
     compose as composeUpOperation,
-    toUnit as toUpOperationUnit,
-    ofUnit as ofUpOperationUnit,
+    toUnit as serializeUpOperation,
+    ofUnit as deserializeUpOperation,
     transform as transformUpOperation,
 } from './internal/operation/upOperation';
 export {
-    Operation as DownOperation,
-    OperationUnit as DownOperationUnit,
+    DownOperation,
+    DownOperationUnit,
     applyBack,
     applyBackAndRestore,
     invert as invertDownOperation,
     compose as composeDownOperation,
-    toUnit as toDownOperationUnit,
-    ofUnit as ofDownOperationUnit,
+    toUnit as serializeDownOperation,
+    ofUnit as deserializeDownOperation,
 } from './internal/operation/downOperation';
