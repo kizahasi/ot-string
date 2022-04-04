@@ -15,8 +15,8 @@ export {
     TwoWayOperationUnit,
     toDownOperation,
     toUpOperation,
-    toUnit as toTwoWayOperationUnit,
-    ofUnit as ofTwoWayOperationUnit,
+    toUnit as serializeTwoWayOperation,
+    ofUnit as deserizalizeTwoWayOperation,
     diff as diff,
     transform as transformTwoWayOperation,
 } from './internal/operation/twoWayOperation';
