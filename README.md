@@ -30,13 +30,13 @@ const prevState = 'January';
 const nextState = 'February';
 const twoWayOperation = diff({ prevState, nextState });
 
-// `toUpOperation` drops some data from twoWayOperation but its object size is reduced.
+// `toUpOperation` drops some data from twoWayOperation, but its object size is reduced.
 const upOperation = toUpOperation(twoWayOperation);
 const nextState2 = apply({ prevState, upOperation });
 console.log(nextState2.isError, nextState2.value);
 // => false February
 
-// `toDownOperation` drops some data from twoWayOperation but its object size is reduced.
+// `toDownOperation` drops some data from twoWayOperation, but its object size is reduced.
 const downOperation = toDownOperation(twoWayOperation);
 const prevState2 = applyBack({ prevState, upOperation });
 console.log(nextState2.isError, nextState2.value);
@@ -59,7 +59,9 @@ const transformed = transformUpOperation({ first, second });
 console.log(transformed.isError);
 // => false
 
+// state1 + first + secondPrime
 const state3a = apply({ prevState: state2_june2, upOperation: transformed.value.secondPrime });
+// state1 + second + firstPrime
 const state3b = apply({ prevState: state2_july1, upOperation: transformed.value.firstPrime });
 
 console.log(state3a.isError);
@@ -85,6 +87,7 @@ import {
     serializeDownOperation,
     deserializeUpOperation,
     deserializeDownOperation,
+    deserializeTwoWayOperation,
 } from '../src';
 
 const twoWayOperation = diff({ prevState: 'hour', nextState: 'ours' });
@@ -93,7 +96,6 @@ const downOperation = toDownOperation(twoWayOperation);
 
 // Serialize UpOperation.
 const serializedUpOperation = serializeUpOperation(upOperation);
-
 console.log(serializedUpOperation);
 // => [ { t: 'd', d: 1 }, { t: 'r', r: 3 }, { t: 'i', i: 's' } ]
 // (t = type, r = retain, i = insert, d = delete. Above object indicates "Delete 1 character, then retain 3 characters, finally insert 's'.")
@@ -103,9 +105,15 @@ const serializedDownOperation = serializeDownOperation(downOperation);
 console.log(serializedDownOperation);
 // => [ { t: 'd', d: 'h' }, { t: 'r', r: 3 }, { t: 'i', i: 1 } ]
 
+// Serialize TwoWayOperation.
+const serializedTwoWayOperation = serializeTwoWayOperation(downOperation);
+console.log(serializedDownOperation);
+// => [ { t: 'd', d: 'h' }, { t: 'r', r: 3 }, { t: 'i', i: 's' } ]
+
 // Deserialize.
 const deserializedUpOperation = deserializeUpOperation(serializedUpOperation);
 const deserializedDownOperation = deserializeDownOperation(serializedDownOperation);
+const deserializedTwoWayOperation = deserializeTwoWayOperation(serializedTwoWayOperation);
 ```
 
 ## Issues
