@@ -1,93 +1,121 @@
 # @kizahasi/ot-string
 
-![GitHub](https://img.shields.io/github/license/kizahasi/ot-string) [![npm version](https://img.shields.io/npm/v/@kizahasi/ot-string.svg?style=flat)](https://www.npmjs.com/package/@kizahasi/ot-string) ![minified size](https://img.shields.io/bundlephobia/min/@kizahasi/ot-string) [![CI](https://github.com/kizahasi/ot-string/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/kizahasi/ot-string/actions/workflows/main.yml) [![publish](https://github.com/kizahasi/ot-string/actions/workflows/publish.yml/badge.svg?branch=release)](https://github.com/kizahasi/ot-string/actions/workflows/publish.yml)
+![GitHub](https://img.shields.io/github/license/kizahasi/ot-string) [![npm version](https://img.shields.io/npm/v/@kizahasi/ot-string.svg?style=flat)](https://www.npmjs.com/package/@kizahasi/ot-string) ![minified size](https://img.shields.io/bundlephobia/min/@kizahasi/ot-string) [![CI](https://github.com/kizahasi/ot-string/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kizahasi/ot-string/actions/workflows/ci.yml) [![publish](https://github.com/kizahasi/ot-string/actions/workflows/publish.yml/badge.svg?branch=release)](https://github.com/kizahasi/ot-string/actions/workflows/publish.yml)
 
 Operational Transfomation library for string.
 
 ## Installation
 
-Run `npm install @kizahasi/ot-string` or `yarn add @kizahasi/ot-string`
+Run `npm install @kizahasi/ot-string` or `yarn add @kizahasi/ot-string`.
 
 ## Usage
 
-```typescript
-import { TextTwoWayOperation, TextUpOperation, TextDownOperation } from '@kizahasi/ot-string';
+### Diff two texts
 
-// Gets diff of two string (diff-match-patch is used)
-const twoWayOperation: TextTwoWayOperation.Operation = TextTwoWayOperation.diff(
-    {
-        first: 'Roses are red',
-        second: 'Violets are blue',
-    }
-);
+```javascript
+import { diff } from '@kizahasi/ot-string';
 
-const upOperation: TextUpOperation.Operation = TextTwoWayOperation.toUpOperation(
-    twoWayOperation
-);
-const second = TextUpOperation.apply({
-    prevState: 'Roses are red',
-    action: upOperation,
-});
-/* second = 
-{ isError: false, value: 'Violets are blue' }
-*/
+const prevState = 'January';
+const nextState = 'February';
 
-const downOperation: TextDownOperation.Operation = TextTwoWayOperation.toDownOperation(
-    twoWayOperation
-);
-const first = TextDownOperation.applyBack({
-    nextState: 'Violets are blue',
-    action: downOperation,
-});
-/* first =
-{ isError: false, value: 'Roses are red' }
-*/
+const twoWayOperation = diff({ prevState, nextState });
+```
 
-// If you want to serialize a Text(Up|Down)Operation.Operation object, Text(Up|Down)Operation.toUpUnit helps you.
-// (t = type, r = retain, i = insert, d = delete)
-const upOperationAsUnitArray = TextUpOperation.toUnit(upOperation);
-/* upOperationAsUnitArray =
-[
-    { t: 'd', d: 1 },
-    { t: 'i', i: 'Vi' },
-    { t: 'r', r: 1 },
-    { t: 'd', d: 1 },
-    { t: 'i', i: 'l' },
-    { t: 'r', r: 1 },
-    { t: 'i', i: 't' },
-    { t: 'r', r: 6 },
-    { t: 'd', d: 1 },
-    { t: 'i', i: 'blu' },
-    { t: 'r', r: 1 },
-    { t: 'd', d: 1 }
-]
-*/
-const downOperationAsUnitArray = TextDownOperation.toUnit(downOperation);
-/* downOperationAsUnitArray =
-[
-    { t: 'd', d: 'R' },
-    { t: 'i', i: 2 },
-    { t: 'r', r: 1 },
-    { t: 'd', d: 's' },
-    { t: 'i', i: 1 },
-    { t: 'r', r: 1 },
-    { t: 'i', i: 1 },
-    { t: 'r', r: 6 },
-    { t: 'd', d: 'r' },
-    { t: 'i', i: 3 },
-    { t: 'r', r: 1 },
-    { t: 'd', d: 'd' }
-]
-*/
+### Apply operations
 
-// To convert back to Text(Up|Down)Operation.Operation, use ofUnit.
-const upOperation2 = TextUpOperation.ofUnit(upOperationAsUnitArray);
-// upOperation2 equals to upOperation
-const downOperation2 = TextDownOperation.ofUnit(downOperationAsUnitArray);
-// downOperation2 equals to downOperation
+```javascript
+import { diff, toUpoperation, apply, toDownOperation, applyBack } from '@kizahasi/ot-string';
+
+const prevState = 'January';
+const nextState = 'February';
+const twoWayOperation = diff({ prevState, nextState });
+
+// `toUpOperation` drops some data from twoWayOperation, but its object size is reduced.
+const upOperation = toUpOperation(twoWayOperation);
+const nextState2 = apply({ prevState, upOperation });
+console.log(nextState2.isError, nextState2.value);
+// => false February
+
+// `toDownOperation` drops some data from twoWayOperation, but its object size is reduced.
+const downOperation = toDownOperation(twoWayOperation);
+const prevState2 = applyBack({ prevState, upOperation });
+console.log(nextState2.isError, nextState2.value);
+// => false January
+```
+
+### Operational transformation
+
+```javascript
+import { toUpOperation, diff, transformUpOperation, apply } from '@kizahasi/ot-string';
+
+const state1 = 'June 1';
+const state2_june2 = 'June 2';
+const state2_july1 = 'July 1';
+
+const first = toUpOperation(diff({ prevState: state1, nextState: state2_june2 }));
+const second = toUpOperation(diff({ prevState: state1, nextState: state2_july1 }));
+
+const transformed = transformUpOperation({ first, second });
+console.log(transformed.isError);
+// => false
+
+// state1 + first + secondPrime
+const state3a = apply({ prevState: state2_june2, upOperation: transformed.value.secondPrime });
+// state1 + second + firstPrime
+const state3b = apply({ prevState: state2_july1, upOperation: transformed.value.firstPrime });
+
+console.log(state3a.isError);
+// => false
+console.log(state3b.isError);
+// => false
+console.log(state3a.value === 'July 2');
+// => true
+
+// state1 + first + secondPrime = state1 + second + firstPrime
+console.log(state3a.value === state3b.value);
+// => true
+```
+
+### Serialization and deserialization
+
+```javascript
+import {
+    diff,
+    toDownOperation,
+    toUpOperation,
+    serializeUpOperation,
+    serializeDownOperation,
+    deserializeUpOperation,
+    deserializeDownOperation,
+    deserializeTwoWayOperation,
+} from '../src';
+
+const twoWayOperation = diff({ prevState: 'hour', nextState: 'ours' });
+const upOperation = toUpOperation(twoWayOperation);
+const downOperation = toDownOperation(twoWayOperation);
+
+// Serialize UpOperation.
+const serializedUpOperation = serializeUpOperation(upOperation);
+console.log(serializedUpOperation);
+// => [ { t: 'd', d: 1 }, { t: 'r', r: 3 }, { t: 'i', i: 's' } ]
+// (t = type, r = retain, i = insert, d = delete. Above object indicates "Delete 1 character, then retain 3 characters, finally insert 's'.")
+
+// Serialize DownOperation.
+const serializedDownOperation = serializeDownOperation(downOperation);
+console.log(serializedDownOperation);
+// => [ { t: 'd', d: 'h' }, { t: 'r', r: 3 }, { t: 'i', i: 1 } ]
+
+// Serialize TwoWayOperation.
+const serializedTwoWayOperation = serializeTwoWayOperation(downOperation);
+console.log(serializedDownOperation);
+// => [ { t: 'd', d: 'h' }, { t: 'r', r: 3 }, { t: 'i', i: 's' } ]
+
+// Deserialize.
+const deserializedUpOperation = deserializeUpOperation(serializedUpOperation);
+const deserializedDownOperation = deserializeDownOperation(serializedDownOperation);
+const deserializedTwoWayOperation = deserializeTwoWayOperation(serializedTwoWayOperation);
 ```
 
 ## Issues
 
-- Because this library uses Typescipt namespace, tree-shaking may not work well to reduce the code size.
-- Some functions are not implemented (e.g. TextUpOperation.diff).
+-   Some functions are not implemented (e.g. transformDownOperation).

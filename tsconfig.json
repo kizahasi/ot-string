@@ -4,8 +4,6 @@
         "lib": ["ES2019"],
         "target": "ES2019",
         "declaration": false,
-        "inlineSourceMap": true,
-        "inlineSources": true,
         "strict": true,
         // linter checks for common issues
         "noImplicitReturns": true,
@@ -19,6 +17,6 @@
         "skipLibCheck": true,
         // error out if import and file system have a casing mismatch. Recommended by TS
         "forceConsistentCasingInFileNames": true,
-        "noUncheckedIndexedAccess": true,
+        "noUncheckedIndexedAccess": true
     }
 }

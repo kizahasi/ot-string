@@ -1,5 +1,5 @@
 {
-    "version": "0.2.4",
+    "version": "0.4.0",
     "license": "MIT",
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
@@ -11,11 +11,12 @@
         "node": ">=12"
     },
     "scripts": {
-        "build": "yarn lint && yarn prettier && rimraf ./dist && tsc -p tsconfig.build-cjs.json && tsc -p tsconfig.build-esm.json && tsc -p tsconfig.build-types.json",
+        "build": "rimraf ./dist && copyfiles \"./src/**/*.ts\" ./dist && tsc -p tsconfig.build-cjs.json && tsc -p tsconfig.build-esm.json && tsc -p tsconfig.build-types.json",
         "test": "jest",
-        "prepare": "yarn build && husky install",
+        "prepare": "husky install",
         "lint": "eslint src test",
-        "prettier": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \".github/**/*.yml\""
+        "prettier": "yarn prettier:base --write",
+        "prettier:base": "prettier \"**/*.{ts,js,json,yml,md}\""
     },
     "prettier": {
         "printWidth": 100,
@@ -23,7 +24,6 @@
         "singleQuote": true,
         "trailingComma": "es5",
         "tabWidth": 4,
-        "endOfLine": "crlf",
         "arrowParens": "avoid"
     },
     "name": "@kizahasi/ot-string",
@@ -38,20 +38,24 @@
         "operational transform",
         "ot"
     ],
+    "sideEffects": false,
     "devDependencies": {
+        "@commitlint/cli": "16.2.3",
+        "@commitlint/config-conventional": "16.2.1",
         "@types/diff-match-patch": "1.0.32",
-        "@types/jest": "27.0.1",
-        "@typescript-eslint/eslint-plugin": "4.29.1",
-        "@typescript-eslint/parser": "4.29.1",
-        "eslint": "7.32.0",
+        "@types/jest": "27.4.1",
+        "@typescript-eslint/eslint-plugin": "5.8.1",
+        "@typescript-eslint/parser": "5.8.1",
+        "copyfiles": "^2.4.1",
+        "eslint": "8.12.0",
         "eslint-config-prettier": "8.3.0",
-        "fast-check": "2.17.0",
-        "husky": "7.0.1",
-        "jest": "27.0.6",
-        "prettier": "2.3.2",
+        "fast-check": "2.20.0",
+        "husky": "7.0.4",
+        "jest": "27.5.1",
+        "prettier": "2.5.1",
         "rimraf": "3.0.2",
-        "ts-jest": "27.0.4",
-        "typescript": "4.3.5"
+        "ts-jest": "27.1.4",
+        "typescript": "4.5.5"
     },
     "dependencies": {
         "@kizahasi/option": "^1.0.0",
