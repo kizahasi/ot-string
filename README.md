@@ -88,7 +88,7 @@ import {
     deserializeUpOperation,
     deserializeDownOperation,
     deserializeTwoWayOperation,
-} from '../src';
+} from '@kizahasi/ot-string';
 
 const twoWayOperation = diff({ prevState: 'hour', nextState: 'ours' });
 const upOperation = toUpOperation(twoWayOperation);
