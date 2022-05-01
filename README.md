@@ -8,6 +8,8 @@ Operational Transfomation library for string.
 
 Run `npm install @kizahasi/ot-string` or `yarn add @kizahasi/ot-string`.
 
+To use it in a browser directly, you can use [Skypack](https://www.skypack.dev/view/@kizahasi/ot-string).
+
 ## Usage
 
 ### Diff two texts
