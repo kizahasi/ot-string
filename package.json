@@ -40,7 +40,7 @@
     ],
     "sideEffects": false,
     "devDependencies": {
-        "@commitlint/cli": "16.2.4",
+        "@commitlint/cli": "16.3.0",
         "@commitlint/config-conventional": "16.2.4",
         "@types/diff-match-patch": "1.0.32",
         "@types/jest": "27.5.2",
