@@ -9,8 +9,8 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                node: ['12.x', '14.x', '16.x']
-                os: [ubuntu-20.04, windows-2022, macOS-11]
+                node: ['14.x', '16.x']
+                os: [ubuntu-20.04]
 
         steps:
             - name: Checkout repo
@@ -46,7 +46,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                node: ['14.x']
+                node: ['16.x']
                 os: [ubuntu-latest]
 
         steps:
