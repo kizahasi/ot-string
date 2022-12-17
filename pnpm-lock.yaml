@@ -14,7 +14,7 @@ specifiers:
   eslint: 8.28.0
   eslint-config-prettier: 8.5.0
   fast-check: 2.25.0
-  husky: 7.0.4
+  husky: 8.0.2
   jest: 27.5.1
   prettier: 2.8.1
   rimraf: 3.0.2
@@ -37,7 +37,7 @@ devDependencies:
   eslint: 8.28.0
   eslint-config-prettier: 8.5.0_eslint@8.28.0
   fast-check: 2.25.0
-  husky: 7.0.4
+  husky: 8.0.2
   jest: 27.5.1
   prettier: 2.8.1
   rimraf: 3.0.2
@@ -2229,9 +2229,9 @@ packages:
     engines: {node: '>=10.17.0'}
     dev: true
 
-  /husky/7.0.4:
-    resolution: {integrity: sha512-vbaCKN2QLtP/vD4yvs6iz6hBEo6wkSzs8HpRah1Z6aGmF2KW5PdYuAd7uX5a+OyBZHBhd+TFLqgjUgytQr4RvQ==}
-    engines: {node: '>=12'}
+  /husky/8.0.2:
+    resolution: {integrity: sha512-Tkv80jtvbnkK3mYWxPZePGFpQ/tT3HNSs/sasF9P2YfkMezDl3ON37YN6jUUI4eTg5LcyVynlb6r4eyvOmspvg==}
+    engines: {node: '>=14'}
     hasBin: true
     dev: true
 
