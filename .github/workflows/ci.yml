@@ -21,17 +21,21 @@ jobs:
               with:
                   node-version: ${{ matrix.node }}
 
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+
             - name: Install
-              run: yarn
+              run: pnpm i
 
             - name: Lint
-              run: yarn lint
+              run: pnpm lint
 
             - name: Build
-              run: yarn build
+              run: pnpm build
 
             - name: Test
-              run: yarn test --ci --coverage --maxWorkers=2
+              run: pnpm run test --ci --coverage --maxWorkers=2
 
             - name: Upload Codecov Coverage
               if: matrix.node == '16.x' && matrix.os == 'ubuntu-20.04' && startsWith(github.head_ref, 'renovate/') == false
@@ -58,8 +62,12 @@ jobs:
               with:
                   node-version: ${{ matrix.node }}
 
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+
             - name: Install
-              run: yarn
+              run: pnpm i
 
             - name: Prettier(check)
-              run: yarn prettier:base --check
+              run: pnpm prettier:base --check
