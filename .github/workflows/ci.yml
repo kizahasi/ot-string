@@ -39,7 +39,7 @@ jobs:
 
             - name: Upload Codecov Coverage
               if: matrix.node == '16.x' && matrix.os == 'ubuntu-20.04' && startsWith(github.head_ref, 'renovate/') == false
-              uses: codecov/codecov-action@v2
+              uses: codecov/codecov-action@v3
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
 
