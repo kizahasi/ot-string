@@ -13,7 +13,7 @@ specifiers:
   diff-match-patch: ^1.0.5
   eslint: 8.28.0
   eslint-config-prettier: 8.5.0
-  fast-check: 2.25.0
+  fast-check: 3.4.0
   husky: 8.0.2
   jest: 29.3.1
   prettier: 2.8.1
@@ -36,7 +36,7 @@ devDependencies:
   copyfiles: 2.4.1
   eslint: 8.28.0
   eslint-config-prettier: 8.5.0_eslint@8.28.0
-  fast-check: 2.25.0
+  fast-check: 3.4.0
   husky: 8.0.2
   jest: 29.3.1
   prettier: 2.8.1
@@ -1902,8 +1902,8 @@ packages:
       jest-util: 29.3.1
     dev: true
 
-  /fast-check/2.25.0:
-    resolution: {integrity: sha512-wRUT2KD2lAmT75WNIJIHECawoUUMHM0I5jrlLXGtGeqmPL8jl/EldUDjY1VCp6fDY8yflyfUeIOsOBrIbIiArg==}
+  /fast-check/3.4.0:
+    resolution: {integrity: sha512-EWeu5YRzLuf5/PjLu3g6p823B4fOsGc/C8abGfEW4ZJfz1mf670TsP8CxeOuICESO88qu7YoPwKRZ2mTMRxwzg==}
     engines: {node: '>=8.0.0'}
     dependencies:
       pure-rand: 5.0.5
