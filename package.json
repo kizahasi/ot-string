@@ -8,8 +8,9 @@
         "dist"
     ],
     "engines": {
-        "node": ">=12"
+        "node": ">=14"
     },
+    "packageManager": "pnpm@8.2.0",
     "scripts": {
         "build": "rimraf ./dist && copyfiles \"./src/**/*.ts\" ./dist && tsc -p tsconfig.build-cjs.json && tsc -p tsconfig.build-esm.json && tsc -p tsconfig.build-types.json",
         "test": "jest",
