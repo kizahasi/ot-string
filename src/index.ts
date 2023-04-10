@@ -10,6 +10,7 @@ export {
     stateTooLong,
     ComposeAndTransformError,
 } from './internal/error';
+export { Insert, Delete, Replace } from './internal/type';
 export {
     TwoWayOperation,
     TwoWayOperationUnit,
@@ -41,5 +42,8 @@ export {
     toUnit as serializeDownOperation,
     ofUnit as deserializeDownOperation,
 } from './internal/operation/downOperation';
+export { Operation } from './internal/operationBuilder/operation';
+export { OperationArrayElement } from './internal/operationBuilder/operationArrayElement';
 export { OperationBuilder } from './internal/operationBuilder/operationBuilder';
 export { OperationBuilderFactory } from './internal/operationBuilder/operationBuilderFactory';
+export { OperationUnit } from './internal/operationBuilder/operationUnit';
