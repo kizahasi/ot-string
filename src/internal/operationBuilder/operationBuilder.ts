@@ -1,16 +1,16 @@
 import { insert$, delete$, retain, edit } from '../const';
 import { PositiveInt } from '../positiveInt';
 import { EditElement, insertToEditElement, deleteToEditElement } from './editElement';
-import { Factory } from './factory';
-import { TextOperation } from './textOperation';
-import { TextOperationArrayElement } from './textOperationArrayElement';
-import { TextOperationElement } from './textOperationElement';
-import { TextOperationUnit } from './textOperationUnit';
+import { OperationBuilderFactory } from './operationBuilderFactory';
+import { Operation } from './operation';
+import { OperationArrayElement } from './operationArrayElement';
+import { OperationElement } from './operationElement';
+import { OperationUnit } from './operationUnit';
 
-export class TextOperationBuilder<TInsert, TDelete> {
+export class OperationBuilder<TInsert, TDelete> {
     public constructor(
-        private factory: Factory<TInsert, TDelete>,
-        source?: TextOperation<TInsert, TDelete>
+        private factory: OperationBuilderFactory<TInsert, TDelete>,
+        source?: Operation<TInsert, TDelete>
     ) {
         if (source == null) {
             return;
@@ -21,7 +21,7 @@ export class TextOperationBuilder<TInsert, TDelete> {
     }
 
     private headEdit: EditElement<TInsert, TDelete> | null = null;
-    private readonly body: TextOperationElement<TInsert, TDelete>[] = [];
+    private readonly body: OperationElement<TInsert, TDelete>[] = [];
     private tailRetain: PositiveInt | 0 = 0;
 
     public retain(count: PositiveInt): void {
@@ -105,7 +105,7 @@ export class TextOperationBuilder<TInsert, TDelete> {
         }
     }
 
-    public onArrayElement(arrayElement: TextOperationArrayElement<TInsert, TDelete>) {
+    public onArrayElement(arrayElement: OperationArrayElement<TInsert, TDelete>) {
         switch (arrayElement.type) {
             case retain:
                 this.retain(arrayElement.retain);
@@ -115,7 +115,7 @@ export class TextOperationBuilder<TInsert, TDelete> {
         }
     }
 
-    public onUnit(unit: TextOperationUnit<TInsert, TDelete>) {
+    public onUnit(unit: OperationUnit<TInsert, TDelete>) {
         if (unit.type === retain) {
             this.retain(unit.retain);
             return;
@@ -123,7 +123,7 @@ export class TextOperationBuilder<TInsert, TDelete> {
         this.edit(unit);
     }
 
-    public build(): TextOperation<TInsert, TDelete> {
+    public build(): Operation<TInsert, TDelete> {
         return {
             headEdit: this.headEdit ?? undefined,
             body: Array.from(this.body),
@@ -131,7 +131,7 @@ export class TextOperationBuilder<TInsert, TDelete> {
         };
     }
 
-    public *toIterable(): IterableIterator<TextOperationArrayElement<TInsert, TDelete>> {
+    public *toIterable(): IterableIterator<OperationArrayElement<TInsert, TDelete>> {
         const operation = this.build();
         if (operation.headEdit != null) {
             yield { type: edit, edit: operation.headEdit };
@@ -145,7 +145,7 @@ export class TextOperationBuilder<TInsert, TDelete> {
         }
     }
 
-    public *toUnits(): IterableIterator<TextOperationUnit<TInsert, TDelete>> {
+    public *toUnits(): IterableIterator<OperationUnit<TInsert, TDelete>> {
         for (const elem of this.toIterable()) {
             if (elem.type === retain) {
                 yield { type: retain, retain: elem.retain };

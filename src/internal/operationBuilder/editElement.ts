@@ -1,5 +1,5 @@
 import { insert$, delete$, replace$ } from '../const';
-import { Factory } from './factory';
+import { OperationBuilderFactory } from './operationBuilderFactory';
 import { Insert, Delete, Replace } from '../type';
 
 export type EditElement<TInsert, TDelete> =
@@ -9,12 +9,12 @@ export type EditElement<TInsert, TDelete> =
 
 export const prevLengthOfEditElement = <TInsert, TDelete>(
     source: EditElement<TInsert, TDelete>,
-    factory: Factory<TInsert, TDelete>
+    factory: OperationBuilderFactory<TInsert, TDelete>
 ) => (source.delete === undefined ? 0 : factory.getDeleteLength(source.delete).value);
 
 export const nextLengthOfEditElement = <TInsert, TDelete>(
     source: EditElement<TInsert, TDelete>,
-    factory: Factory<TInsert, TDelete>
+    factory: OperationBuilderFactory<TInsert, TDelete>
 ) => (source.insert === undefined ? 0 : factory.getInsertLength(source.insert).value);
 
 export const mapEditElement = <TInsert1, TInsert2, TDelete1, TDelete2>({

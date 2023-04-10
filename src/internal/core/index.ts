@@ -12,20 +12,20 @@ import {
 } from '../error';
 import { NonEmptyString } from '../nonEmptyString';
 import { PositiveInt } from '../positiveInt';
-import { invertEditElement } from '../util/editElement';
-import { Factory } from '../util/factory';
-import { TextOperation } from '../util/textOperation';
+import { invertEditElement } from '../operationBuilder/editElement';
+import { OperationBuilderFactory } from '../operationBuilder/operationBuilderFactory';
+import { Operation } from '../operationBuilder/operation';
 import {
-    TextOperationArrayElement,
-    prevLengthOfTextOperationElementArray,
-} from '../util/textOperationArrayElement';
-import { TextOperationBuilder } from '../util/textOperationBuilder';
-import { invertTextOperationElement } from '../util/textOperationElement';
+    OperationArrayElement,
+    prevLengthOfOperationElementArray,
+} from '../operationBuilder/operationArrayElement';
+import { OperationBuilder } from '../operationBuilder/operationBuilder';
+import { invertOperationElement } from '../operationBuilder/operationElement';
 import {
-    TextOperationUnit,
-    nextLengthOfTextOperationUnitArray,
-    prevLengthOfTextOperationUnitArray,
-} from '../util/textOperationUnit';
+    OperationUnit,
+    nextLengthOfOperationUnitArray,
+    prevLengthOfOperationUnitArray,
+} from '../operationBuilder/operationUnit';
 
 const replace = ({
     source,
@@ -56,22 +56,22 @@ export const applyAndRestoreCore = <TDelete1, TDelete2>({
     mapping,
 }: {
     state: string;
-    action: ReadonlyArray<TextOperationArrayElement<NonEmptyString, TDelete1>>;
+    action: ReadonlyArray<OperationArrayElement<NonEmptyString, TDelete1>>;
     getDeleteLength(del: TDelete1): PositiveInt;
 
     // restoreOptionがundefined ⇔ 戻り値のrestoredがnon-undefined
     restoreOption?: {
-        factory: Factory<NonEmptyString, TDelete2>;
+        factory: OperationBuilderFactory<NonEmptyString, TDelete2>;
     };
 
     // Noneを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にSomeを返せばよい。
     // restoreOption === undefinedのとき、TDelete2は使われないのでOkの値は何でもいい。
     mapping: (params: { expected: TDelete1; actual: NonEmptyString }) => Option<TDelete2>;
 }): Result<
-    { newState: string; restored?: TextOperation<NonEmptyString, TDelete2> },
+    { newState: string; restored?: Operation<NonEmptyString, TDelete2> },
     ApplyError<TDelete1>
 > => {
-    const prevLength = prevLengthOfTextOperationElementArray(action, getDeleteLength);
+    const prevLength = prevLengthOfOperationElementArray(action, getDeleteLength);
     if (state.length < prevLength) {
         return Result.error({ type: stateTooShort });
     }
@@ -84,7 +84,7 @@ export const applyAndRestoreCore = <TDelete1, TDelete2>({
     const builder =
         restoreOption == null
             ? undefined
-            : new TextOperationBuilder<NonEmptyString, TDelete2>(restoreOption.factory);
+            : new OperationBuilder<NonEmptyString, TDelete2>(restoreOption.factory);
 
     for (const act of action) {
         switch (act.type) {
@@ -142,8 +142,8 @@ export const composeCore = <TInsert, TDelete>({
     splitDelete: splitDeleteCore,
     splitInsert: splitInsertCore,
 }: {
-    first: ReadonlyArray<TextOperationUnit<TInsert, TDelete>>;
-    second: ReadonlyArray<TextOperationUnit<TInsert, TDelete>>;
+    first: ReadonlyArray<OperationUnit<TInsert, TDelete>>;
+    second: ReadonlyArray<OperationUnit<TInsert, TDelete>>;
 
     // 例:
     // ('foo', 1) -> [ 'f', 'oo' ]
@@ -155,10 +155,10 @@ export const composeCore = <TInsert, TDelete>({
     // splitDeleteと同様。
     splitInsert: (target: TInsert, index: PositiveInt) => [TInsert, TInsert];
 
-    factory: Factory<TInsert, TDelete>;
-}): Result<TextOperation<TInsert, TDelete>, ComposeAndTransformErrorBase> => {
-    const nextLengthOfFirst = nextLengthOfTextOperationUnitArray($first, factory);
-    const prevLengthOfSecond = prevLengthOfTextOperationUnitArray($second, factory);
+    factory: OperationBuilderFactory<TInsert, TDelete>;
+}): Result<Operation<TInsert, TDelete>, ComposeAndTransformErrorBase> => {
+    const nextLengthOfFirst = nextLengthOfOperationUnitArray($first, factory);
+    const prevLengthOfSecond = prevLengthOfOperationUnitArray($second, factory);
     if (nextLengthOfFirst < prevLengthOfSecond) {
         return Result.error({ type: secondTooLong });
     }
@@ -168,10 +168,10 @@ export const composeCore = <TInsert, TDelete>({
 
     const first = Array.from($first);
     const second = Array.from($second);
-    let firstShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
-    let secondShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
+    let firstShift: OperationUnit<TInsert, TDelete> | undefined = undefined;
+    let secondShift: OperationUnit<TInsert, TDelete> | undefined = undefined;
 
-    const builder = new TextOperationBuilder<TInsert, TDelete>(factory);
+    const builder = new OperationBuilder<TInsert, TDelete>(factory);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -329,8 +329,8 @@ export const transformCore = <TInsert, TDelete>({
     factory,
     splitDelete: splitDeleteCore,
 }: {
-    first: ReadonlyArray<TextOperationUnit<TInsert, TDelete>>;
-    second: ReadonlyArray<TextOperationUnit<TInsert, TDelete>>;
+    first: ReadonlyArray<OperationUnit<TInsert, TDelete>>;
+    second: ReadonlyArray<OperationUnit<TInsert, TDelete>>;
 
     // 例:
     // ('foo', 1) -> [ 'f', 'oo' ]
@@ -339,16 +339,16 @@ export const transformCore = <TInsert, TDelete>({
     // 範囲外のindexが渡されることはない。
     splitDelete: (target: TDelete, index: PositiveInt) => [TDelete, TDelete];
 
-    factory: Factory<TInsert, TDelete>;
+    factory: OperationBuilderFactory<TInsert, TDelete>;
 }): Result<
     {
-        firstPrime: TextOperation<TInsert, TDelete>;
-        secondPrime: TextOperation<TInsert, TDelete>;
+        firstPrime: Operation<TInsert, TDelete>;
+        secondPrime: Operation<TInsert, TDelete>;
     },
     ComposeAndTransformErrorBase
 > => {
-    const prevLengthOfFirst = prevLengthOfTextOperationUnitArray($first, factory);
-    const prevLengthOfSecond = prevLengthOfTextOperationUnitArray($second, factory);
+    const prevLengthOfFirst = prevLengthOfOperationUnitArray($first, factory);
+    const prevLengthOfSecond = prevLengthOfOperationUnitArray($second, factory);
     if (prevLengthOfFirst < prevLengthOfSecond) {
         return Result.error({ type: secondTooLong });
     }
@@ -358,11 +358,11 @@ export const transformCore = <TInsert, TDelete>({
 
     const first = Array.from($first);
     const second = Array.from($second);
-    let firstShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
-    let secondShift: TextOperationUnit<TInsert, TDelete> | undefined = undefined;
+    let firstShift: OperationUnit<TInsert, TDelete> | undefined = undefined;
+    let secondShift: OperationUnit<TInsert, TDelete> | undefined = undefined;
 
-    const firstPrime = new TextOperationBuilder<TInsert, TDelete>(factory);
-    const secondPrime = new TextOperationBuilder<TInsert, TDelete>(factory);
+    const firstPrime = new OperationBuilder<TInsert, TDelete>(factory);
+    const secondPrime = new OperationBuilder<TInsert, TDelete>(factory);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -545,11 +545,11 @@ export const transformCore = <TInsert, TDelete>({
     }
 };
 
-export const invertCore = <T1, T2>(source: TextOperation<T1, T2>): TextOperation<T2, T1> => {
+export const invertCore = <T1, T2>(source: Operation<T1, T2>): Operation<T2, T1> => {
     return {
         headEdit:
             source.headEdit === undefined ? source.headEdit : invertEditElement(source.headEdit),
-        body: source.body.map(body => invertTextOperationElement(body)),
+        body: source.body.map(body => invertOperationElement(body)),
         tailRetain: source.tailRetain,
     };
 };

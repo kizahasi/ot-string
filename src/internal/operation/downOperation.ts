@@ -4,13 +4,13 @@ import { invertCore, composeCore } from '../core';
 import { ApplyError, ComposeAndTransformError } from '../error';
 import { NonEmptyString } from '../nonEmptyString';
 import { PositiveInt } from '../positiveInt';
-import { downFactory } from '../util/factory';
-import { TextOperation } from '../util/textOperation';
-import { TextOperationBuilder } from '../util/textOperationBuilder';
+import { downFactory } from '../operationBuilder/operationBuilderFactory';
+import { Operation } from '../operationBuilder/operation';
+import { OperationBuilder } from '../operationBuilder/operationBuilder';
 import * as TextTwoWayOperation from './twoWayOperation';
 import * as TextUpOperation from './upOperation';
 
-export type DownOperation = TextOperation<PositiveInt, NonEmptyString>;
+export type DownOperation = Operation<PositiveInt, NonEmptyString>;
 export type DownOperationUnit =
     | {
           t: typeof r;
@@ -69,8 +69,8 @@ export const compose = ({
     second: DownOperation;
 }): Result<DownOperation, ComposeAndTransformError<PositiveInt, NonEmptyString>> => {
     const result = composeCore({
-        first: Array.from(new TextOperationBuilder(downFactory, first).toUnits()),
-        second: Array.from(new TextOperationBuilder(downFactory, second).toUnits()),
+        first: Array.from(new OperationBuilder(downFactory, first).toUnits()),
+        second: Array.from(new OperationBuilder(downFactory, second).toUnits()),
         factory: downFactory,
         splitInsert: (target, deleteCount) => [
             deleteCount,
@@ -91,11 +91,11 @@ export const compose = ({
     return result;
 };
 
-export const invert = (source: DownOperation): TextOperation<NonEmptyString, PositiveInt> =>
+export const invert = (source: DownOperation): Operation<NonEmptyString, PositiveInt> =>
     invertCore(source);
 
 export const toUnit = (source: DownOperation): DownOperationUnit[] => {
-    return Array.from(new TextOperationBuilder(downFactory, source).toUnits()).map(unit => {
+    return Array.from(new OperationBuilder(downFactory, source).toUnits()).map(unit => {
         switch (unit.type) {
             case insert$:
                 return {
@@ -119,7 +119,7 @@ export const toUnit = (source: DownOperation): DownOperationUnit[] => {
 export const ofUnit = (
     source: ReadonlyArray<DownOperationUnit | TextTwoWayOperation.TwoWayOperationUnit>
 ): DownOperation => {
-    const builder = new TextOperationBuilder<PositiveInt, NonEmptyString>(downFactory);
+    const builder = new OperationBuilder<PositiveInt, NonEmptyString>(downFactory);
     for (const unit of source) {
         if (unit == null) {
             continue;

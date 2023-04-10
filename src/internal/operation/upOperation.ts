@@ -5,12 +5,12 @@ import { composeCore, transformCore, invertCore, applyAndRestoreCore } from '../
 import { ApplyError, ComposeAndTransformError } from '../error';
 import { NonEmptyString } from '../nonEmptyString';
 import { PositiveInt } from '../positiveInt';
-import { upFactory, twoWayFactory } from '../util/factory';
-import { TextOperation } from '../util/textOperation';
-import { TextOperationBuilder } from '../util/textOperationBuilder';
+import { upFactory, twoWayFactory } from '../operationBuilder/operationBuilderFactory';
+import { Operation } from '../operationBuilder/operation';
+import { OperationBuilder } from '../operationBuilder/operationBuilder';
 import * as TextTwoWayOperation from './twoWayOperation';
 
-export type UpOperation = TextOperation<NonEmptyString, PositiveInt>;
+export type UpOperation = Operation<NonEmptyString, PositiveInt>;
 export type UpOperationUnit =
     | {
           t: typeof r;
@@ -34,7 +34,7 @@ export const apply = ({
 }): Result<string, ApplyError<PositiveInt>> => {
     const result = applyAndRestoreCore({
         state: prevState,
-        action: Array.from(new TextOperationBuilder(upFactory, upOperation).toIterable()),
+        action: Array.from(new OperationBuilder(upFactory, upOperation).toIterable()),
         getDeleteLength: del => del,
         mapping: () => Option.some(undefined),
     });
@@ -56,7 +56,7 @@ export const applyAndRestore = ({
 > => {
     const result = applyAndRestoreCore({
         state: prevState,
-        action: Array.from(new TextOperationBuilder(upFactory, upOperation).toIterable()),
+        action: Array.from(new OperationBuilder(upFactory, upOperation).toIterable()),
         getDeleteLength: del => del,
         restoreOption: {
             factory: twoWayFactory,
@@ -83,8 +83,8 @@ export const compose = ({
     second: UpOperation;
 }): Result<UpOperation, ComposeAndTransformError<NonEmptyString, PositiveInt>> => {
     const result = composeCore({
-        first: Array.from(new TextOperationBuilder(upFactory, first).toUnits()),
-        second: Array.from(new TextOperationBuilder(upFactory, second).toUnits()),
+        first: Array.from(new OperationBuilder(upFactory, first).toUnits()),
+        second: Array.from(new OperationBuilder(upFactory, second).toUnits()),
         factory: upFactory,
         splitInsert: (str, index) => [
             new NonEmptyString(str.value.substring(0, index.value)),
@@ -116,8 +116,8 @@ export const transform = ({
     ComposeAndTransformError<NonEmptyString, PositiveInt>
 > => {
     const result = transformCore({
-        first: Array.from(new TextOperationBuilder(upFactory, first).toUnits()),
-        second: Array.from(new TextOperationBuilder(upFactory, second).toUnits()),
+        first: Array.from(new OperationBuilder(upFactory, first).toUnits()),
+        second: Array.from(new OperationBuilder(upFactory, second).toUnits()),
         factory: upFactory,
         splitDelete: (target, deleteCount) => [
             deleteCount,
@@ -134,11 +134,11 @@ export const transform = ({
     return result;
 };
 
-export const invert = (source: UpOperation): TextOperation<PositiveInt, NonEmptyString> =>
+export const invert = (source: UpOperation): Operation<PositiveInt, NonEmptyString> =>
     invertCore(source);
 
 export const toUnit = (source: UpOperation): UpOperationUnit[] => {
-    return Array.from(new TextOperationBuilder(upFactory, source).toUnits()).map(unit => {
+    return Array.from(new OperationBuilder(upFactory, source).toUnits()).map(unit => {
         switch (unit.type) {
             case insert$:
                 return {
@@ -162,7 +162,7 @@ export const toUnit = (source: UpOperation): UpOperationUnit[] => {
 export const ofUnit = (
     source: ReadonlyArray<UpOperationUnit | TextTwoWayOperation.TwoWayOperationUnit>
 ): UpOperation => {
-    const builder = new TextOperationBuilder<NonEmptyString, PositiveInt>(upFactory);
+    const builder = new OperationBuilder<NonEmptyString, PositiveInt>(upFactory);
     for (const unit of source) {
         if (unit == null) {
             continue;
