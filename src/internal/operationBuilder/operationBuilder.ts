@@ -7,6 +7,11 @@ import { OperationArrayElement } from './operationArrayElement';
 import { OperationElement } from './operationElement';
 import { OperationUnit } from './operationUnit';
 
+/**
+ * You can generate operations easiler.
+ *
+ * @experimental This class is experimental therefore changes may occur without notice in any future release.
+ */
 export class OperationBuilder<TInsert, TDelete> {
     readonly #factory: OperationBuilderFactory<TInsert, TDelete>;
 
