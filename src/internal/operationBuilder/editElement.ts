@@ -73,6 +73,7 @@ export const mergeEditElement = <TInsert, TDelete>(
                         delete: second.delete,
                     };
             }
+            break;
         case delete$:
             switch (second.type) {
                 case insert$:
@@ -93,6 +94,7 @@ export const mergeEditElement = <TInsert, TDelete>(
                         delete: concatDelete(first.delete, second.delete),
                     };
             }
+            break;
         case replace$:
             switch (second.type) {
                 case insert$:
@@ -114,6 +116,7 @@ export const mergeEditElement = <TInsert, TDelete>(
                         delete: concatDelete(first.delete, second.delete),
                     };
             }
+            break;
     }
 };
 

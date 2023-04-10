@@ -10,7 +10,10 @@ import { OperationUnit } from './operationUnit';
 export class OperationBuilder<TInsert, TDelete> {
     readonly #factory: OperationBuilderFactory<TInsert, TDelete>;
 
-    constructor(factory: OperationBuilderFactory<TInsert, TDelete>, source?: Operation<TInsert, TDelete>) {
+    constructor(
+        factory: OperationBuilderFactory<TInsert, TDelete>,
+        source?: Operation<TInsert, TDelete>
+    ) {
         this.#factory = factory;
         if (source == null) {
             return;
