@@ -1,5 +1,5 @@
 import { NonEmptyString } from './nonEmptyString';
-import { TextOperation } from './util/textOperation';
+import { Operation } from './operationBuilder/operation';
 
 export const deleteStringNotMatch = 'deleteStringNotMatch';
 export const stateTooShort = 'stateTooShort';
@@ -26,6 +26,6 @@ export type ComposeAndTransformErrorBase = {
 };
 
 export type ComposeAndTransformError<TInsert, TDelete> = ComposeAndTransformErrorBase & {
-    first: TextOperation<TInsert, TDelete>;
-    second: TextOperation<TInsert, TDelete>;
+    first: Operation<TInsert, TDelete>;
+    second: Operation<TInsert, TDelete>;
 };

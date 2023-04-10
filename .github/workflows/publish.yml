@@ -10,18 +10,21 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
               with:
-                  node-version: 14.x
+                  node-version: 18.x
                   registry-url: 'https://registry.npmjs.org'
                   always-auth: true
             - name: can publish
               run: npx can-npm-publish --verbose
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: latest
             - name: install
-              run: yarn
+              run: pnpm i
             - name: build
-              run: yarn build
+              run: pnpm build
             - name: publish
               run: npm publish --access=public
               env:

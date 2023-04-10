@@ -9,33 +9,37 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                node: ['12.x', '14.x', '16.x']
-                os: [ubuntu-20.04, windows-2022, macOS-11]
+                node: ['18.x']
+                os: [ubuntu-20.04]
 
         steps:
             - name: Checkout repo
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: Use Node ${{ matrix.node }}
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v3
               with:
                   node-version: ${{ matrix.node }}
 
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+
             - name: Install
-              run: yarn
+              run: pnpm i
 
             - name: Lint
-              run: yarn lint
+              run: pnpm lint
 
             - name: Build
-              run: yarn build
+              run: pnpm build
 
             - name: Test
-              run: yarn test --ci --coverage --maxWorkers=2
+              run: pnpm run test --ci --coverage --maxWorkers=2
 
             - name: Upload Codecov Coverage
-              if: matrix.node == '16.x' && matrix.os == 'ubuntu-20.04' && startsWith(github.head_ref, 'renovate/') == false
-              uses: codecov/codecov-action@v2
+              if: matrix.node == '18.x' && matrix.os == 'ubuntu-20.04' && startsWith(github.head_ref, 'renovate/') == false
+              uses: codecov/codecov-action@v3
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -46,20 +50,24 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                node: ['14.x']
+                node: ['18.x']
                 os: [ubuntu-latest]
 
         steps:
             - name: Checkout repo
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: Use Node ${{ matrix.node }}
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v3
               with:
                   node-version: ${{ matrix.node }}
 
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: latest
+
             - name: Install
-              run: yarn
+              run: pnpm i
 
             - name: Prettier(check)
-              run: yarn prettier:base --check
+              run: pnpm prettier:base --check

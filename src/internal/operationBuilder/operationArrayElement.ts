@@ -2,7 +2,7 @@ import { edit, retain } from '../const';
 import { PositiveInt } from '../positiveInt';
 import { EditElement } from './editElement';
 
-export type TextOperationArrayElement<TInsert, TDelete> =
+export type OperationArrayElement<TInsert, TDelete> =
     | {
           type: typeof retain;
           retain: PositiveInt;
@@ -12,8 +12,8 @@ export type TextOperationArrayElement<TInsert, TDelete> =
           edit: EditElement<TInsert, TDelete>;
       };
 
-export const prevLengthOfTextOperationElementArray = <TInsert, TDelete>(
-    source: ReadonlyArray<TextOperationArrayElement<TInsert, TDelete>>,
+export const prevLengthOfOperationElementArray = <TInsert, TDelete>(
+    source: ReadonlyArray<OperationArrayElement<TInsert, TDelete>>,
     getDeleteLength: (del: TDelete) => PositiveInt
 ) => {
     return source.reduce((seed, elem) => {

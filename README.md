@@ -8,6 +8,8 @@ Operational Transfomation library for string.
 
 Run `npm install @kizahasi/ot-string` or `yarn add @kizahasi/ot-string`.
 
+To use it in a browser directly, you can use [Skypack](https://www.skypack.dev/view/@kizahasi/ot-string).
+
 ## Usage
 
 ### Diff two texts
@@ -88,7 +90,7 @@ import {
     deserializeUpOperation,
     deserializeDownOperation,
     deserializeTwoWayOperation,
-} from '../src';
+} from '@kizahasi/ot-string';
 
 const twoWayOperation = diff({ prevState: 'hour', nextState: 'ours' });
 const upOperation = toUpOperation(twoWayOperation);

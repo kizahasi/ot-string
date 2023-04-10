@@ -41,3 +41,5 @@ export {
     toUnit as serializeDownOperation,
     ofUnit as deserializeDownOperation,
 } from './internal/operation/downOperation';
+export { OperationBuilder } from './internal/operationBuilder/operationBuilder';
+export { OperationBuilderFactory } from './internal/operationBuilder/operationBuilderFactory';

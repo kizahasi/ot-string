@@ -5,11 +5,11 @@ import { transformCore } from '../core';
 import { ComposeAndTransformError } from '../error';
 import { NonEmptyString } from '../nonEmptyString';
 import { PositiveInt } from '../positiveInt';
-import { twoWayFactory } from '../util/factory';
-import { TextOperation, mapTextOperation } from '../util/textOperation';
-import { TextOperationBuilder } from '../util/textOperationBuilder';
+import { twoWayFactory } from '../operationBuilder/operationBuilderFactory';
+import { Operation, mapOperation } from '../operationBuilder/operation';
+import { OperationBuilder } from '../operationBuilder/operationBuilder';
 
-export type TwoWayOperation = TextOperation<NonEmptyString, NonEmptyString>;
+export type TwoWayOperation = Operation<NonEmptyString, NonEmptyString>;
 export type TwoWayOperationUnit =
     | {
           t: typeof r;
@@ -31,7 +31,7 @@ export const diff = ({
     prevState: string;
     nextState: string;
 }): TwoWayOperation => {
-    const builder = new TextOperationBuilder<NonEmptyString, NonEmptyString>(twoWayFactory);
+    const builder = new OperationBuilder<NonEmptyString, NonEmptyString>(twoWayFactory);
     const dmp = new diff_match_patch();
     dmp.diff_main(prevState, nextState).forEach(([diffType, diff]) => {
         switch (diffType) {
@@ -60,8 +60,8 @@ export const transform = ({
     ComposeAndTransformError<NonEmptyString, NonEmptyString>
 > => {
     const result = transformCore({
-        first: Array.from(new TextOperationBuilder(twoWayFactory, first).toUnits()),
-        second: Array.from(new TextOperationBuilder(twoWayFactory, second).toUnits()),
+        first: Array.from(new OperationBuilder(twoWayFactory, first).toUnits()),
+        second: Array.from(new OperationBuilder(twoWayFactory, second).toUnits()),
         factory: twoWayFactory,
         splitDelete: (target, deleteCount) => [
             new NonEmptyString(target.value.substring(0, deleteCount.value)),
@@ -79,7 +79,7 @@ export const transform = ({
 };
 
 export const toUnit = (source: TwoWayOperation): TwoWayOperationUnit[] => {
-    return Array.from(new TextOperationBuilder(twoWayFactory, source).toUnits()).map(unit => {
+    return Array.from(new OperationBuilder(twoWayFactory, source).toUnits()).map(unit => {
         switch (unit.type) {
             case insert$:
                 return {
@@ -101,7 +101,7 @@ export const toUnit = (source: TwoWayOperation): TwoWayOperationUnit[] => {
 };
 
 export const ofUnit = (source: ReadonlyArray<TwoWayOperationUnit>): TwoWayOperation => {
-    const builder = new TextOperationBuilder<NonEmptyString, NonEmptyString>(twoWayFactory);
+    const builder = new OperationBuilder<NonEmptyString, NonEmptyString>(twoWayFactory);
     for (const unit of source) {
         if (unit == null) {
             continue;
@@ -139,10 +139,8 @@ export const ofUnit = (source: ReadonlyArray<TwoWayOperationUnit>): TwoWayOperat
     return builder.build();
 };
 
-export const toUpOperation = (
-    source: TwoWayOperation
-): TextOperation<NonEmptyString, PositiveInt> => {
-    return mapTextOperation({
+export const toUpOperation = (source: TwoWayOperation): Operation<NonEmptyString, PositiveInt> => {
+    return mapOperation({
         source,
         mapInsert: insert => insert,
         mapDelete: del => del.length,
@@ -151,8 +149,8 @@ export const toUpOperation = (
 
 export const toDownOperation = (
     source: TwoWayOperation
-): TextOperation<PositiveInt, NonEmptyString> => {
-    return mapTextOperation({
+): Operation<PositiveInt, NonEmptyString> => {
+    return mapOperation({
         source,
         mapInsert: insert => insert.length,
         mapDelete: del => del,
