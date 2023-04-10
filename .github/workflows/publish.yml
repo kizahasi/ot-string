@@ -16,14 +16,12 @@ jobs:
                   node-version: 18.x
                   registry-url: 'https://registry.npmjs.org'
                   always-auth: true
-            - name: can publish
-              run: npx can-npm-publish --verbose
             - uses: pnpm/action-setup@v2
             - name: install
               run: pnpm i
             - name: build
-              run: pnpm build
+              run: pnpm -r build
             - name: publish
-              run: npm publish --access=public
+              run: pnpm -r publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

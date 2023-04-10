@@ -15,5 +15,13 @@ jobs:
                   node-version: 18.x
                   registry-url: 'https://registry.npmjs.org'
                   always-auth: true
-            - name: can publish
-              run: npx can-npm-publish --verbose
+            - uses: pnpm/action-setup@v2
+            - name: dry-run and comment to the PR
+              uses: thollander/actions-comment-pull-request@v2
+              with:
+                  message: >
+                      Following packages will be published if you accept this PR.
+
+                      ```
+                      $(pnpm -r publish --dry-run)
+                      ```
