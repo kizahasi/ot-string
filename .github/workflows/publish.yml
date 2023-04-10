@@ -19,8 +19,6 @@ jobs:
             - name: can publish
               run: npx can-npm-publish --verbose
             - uses: pnpm/action-setup@v2
-              with:
-                  version: latest
             - name: install
               run: pnpm i
             - name: build
