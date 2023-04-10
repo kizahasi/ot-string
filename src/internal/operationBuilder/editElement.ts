@@ -46,55 +46,74 @@ export const mapEditElement = <TInsert1, TInsert2, TDelete1, TDelete2>({
     }
 };
 
-export const insertToEditElement = <TInsert, TDelete>(
-    source: EditElement<TInsert, TDelete>,
-    insert: TInsert,
-    concat: (first: TInsert, second: TInsert) => TInsert
+export const mergeEditElement = <TInsert, TDelete>(
+    first: EditElement<TInsert, TDelete>,
+    second: EditElement<TInsert, TDelete>,
+    concatInsert: (first: TInsert, second: TInsert) => TInsert,
+    concatDelete: (first: TDelete, second: TDelete) => TDelete
 ): EditElement<TInsert, TDelete> => {
-    switch (source.type) {
+    switch (first.type) {
         case insert$:
-            return {
-                type: insert$,
-                insert: concat(source.insert, insert),
-            };
+            switch (second.type) {
+                case insert$:
+                    return {
+                        type: insert$,
+                        insert: concatInsert(first.insert, second.insert),
+                    };
+                case delete$:
+                    return {
+                        type: replace$,
+                        insert: first.insert,
+                        delete: second.delete,
+                    };
+                case replace$:
+                    return {
+                        type: replace$,
+                        insert: concatInsert(first.insert, second.insert),
+                        delete: second.delete,
+                    };
+            }
         case delete$:
-            return {
-                type: replace$,
-                insert: insert,
-                delete: source.delete,
-            };
+            switch (second.type) {
+                case insert$:
+                    return {
+                        type: replace$,
+                        insert: second.insert,
+                        delete: first.delete,
+                    };
+                case delete$:
+                    return {
+                        type: delete$,
+                        delete: concatDelete(first.delete, second.delete),
+                    };
+                case replace$:
+                    return {
+                        type: replace$,
+                        insert: second.insert,
+                        delete: concatDelete(first.delete, second.delete),
+                    };
+            }
         case replace$:
-            return {
-                type: replace$,
-                insert: concat(source.insert, insert),
-                delete: source.delete,
-            };
-    }
-};
-
-export const deleteToEditElement = <TInsert, TDelete>(
-    source: EditElement<TInsert, TDelete>,
-    del: TDelete,
-    concat: (first: TDelete, second: TDelete) => TDelete
-): EditElement<TInsert, TDelete> => {
-    switch (source.type) {
-        case insert$:
-            return {
-                type: replace$,
-                insert: source.insert,
-                delete: del,
-            };
-        case delete$:
-            return {
-                type: delete$,
-                delete: concat(source.delete, del),
-            };
-        case replace$:
-            return {
-                type: replace$,
-                insert: source.insert,
-                delete: concat(source.delete, del),
-            };
+            switch (second.type) {
+                case insert$:
+                    return {
+                        type: replace$,
+                        insert: concatInsert(first.insert, second.insert),
+                        delete: first.delete,
+                    };
+                case delete$:
+                    return {
+                        type: replace$,
+                        insert: first.insert,
+                        delete: concatDelete(first.delete, second.delete),
+                    };
+                case replace$:
+                    return {
+                        type: replace$,
+                        insert: concatInsert(first.insert, second.insert),
+                        delete: concatDelete(first.delete, second.delete),
+                    };
+            }
     }
 };
 

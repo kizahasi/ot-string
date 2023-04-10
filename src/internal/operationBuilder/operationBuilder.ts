@@ -1,7 +1,7 @@
 import { insert$, delete$, retain, edit } from '../const';
 import { PositiveInt } from '../positiveInt';
-import { EditElement, insertToEditElement, deleteToEditElement } from './editElement';
 import { OperationBuilderFactory } from './operationBuilderFactory';
+import { EditElement, mergeEditElement } from './editElement';
 import { Operation } from './operation';
 import { OperationArrayElement } from './operationArrayElement';
 import { OperationElement } from './operationElement';
@@ -32,77 +32,49 @@ export class OperationBuilder<TInsert, TDelete> {
         this.tailRetain = PositiveInt.add(this.tailRetain, count);
     }
 
-    public insert(insert: TInsert): void {
+    public edit(edit: EditElement<TInsert, TDelete>) {
         if (this.tailRetain !== 0) {
             this.body.push({
                 firstRetain: this.tailRetain,
-                secondEdit: {
-                    type: insert$,
-                    insert,
-                },
+                secondEdit: edit,
             });
             this.tailRetain = 0;
             return;
         }
+
         if (this.body.length !== 0) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const last = this.body[this.body.length - 1]!;
             this.body[this.body.length - 1] = {
                 ...last,
-                secondEdit: insertToEditElement(last.secondEdit, insert, this.factory.concatInsert),
+                secondEdit: mergeEditElement(
+                    last.secondEdit,
+                    edit,
+                    this.factory.concatInsert,
+                    this.factory.concatDelete
+                ),
             };
             return;
         }
+
         if (this.headEdit == null) {
-            this.headEdit = {
-                type: insert$,
-                insert,
-                delete: undefined,
-            };
+            this.headEdit = edit;
             return;
         }
-        this.headEdit = insertToEditElement(this.headEdit, insert, this.factory.concatInsert);
+        this.headEdit = mergeEditElement(
+            this.headEdit,
+            edit,
+            this.factory.concatInsert,
+            this.factory.concatDelete
+        );
+    }
+
+    public insert(insert: TInsert): void {
+        this.edit({ type: insert$, insert });
     }
 
     public delete(del: TDelete): void {
-        if (this.tailRetain !== 0) {
-            this.body.push({
-                firstRetain: this.tailRetain,
-                secondEdit: {
-                    type: delete$,
-                    delete: del,
-                },
-            });
-            this.tailRetain = 0;
-            return;
-        }
-        if (this.body.length !== 0) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const last = this.body[this.body.length - 1]!;
-            this.body[this.body.length - 1] = {
-                ...last,
-                secondEdit: deleteToEditElement(last.secondEdit, del, this.factory.concatDelete),
-            };
-            return;
-        }
-        if (this.headEdit == null) {
-            this.headEdit = {
-                type: delete$,
-                insert: undefined,
-                delete: del,
-            };
-            return;
-        }
-        this.headEdit = deleteToEditElement(this.headEdit, del, this.factory.concatDelete);
-    }
-
-    public edit(edit: EditElement<TInsert, TDelete>) {
-        if (edit.delete !== undefined) {
-            this.delete(edit.delete);
-        }
-        if (edit.insert !== undefined) {
-            this.insert(edit.insert);
-        }
+        this.edit({ type: delete$, delete: del });
     }
 
     public onArrayElement(arrayElement: OperationArrayElement<TInsert, TDelete>) {
