@@ -50,8 +50,8 @@ export class OperationBuilder<TInsert, TDelete> {
                 secondEdit: mergeEditElement(
                     last.secondEdit,
                     edit,
-                    this.factory.concatInsert,
-                    this.factory.concatDelete
+                    (x, y) => this.factory.concatInsert(x, y),
+                    (x, y) => this.factory.concatDelete(x, y)
                 ),
             };
             return;
@@ -64,8 +64,8 @@ export class OperationBuilder<TInsert, TDelete> {
         this.headEdit = mergeEditElement(
             this.headEdit,
             edit,
-            this.factory.concatInsert,
-            this.factory.concatDelete
+            (x, y) => this.factory.concatInsert(x, y),
+            (x, y) => this.factory.concatDelete(x, y)
         );
     }
 
