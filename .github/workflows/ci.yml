@@ -9,7 +9,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                node: ['14.x', '16.x']
+                node: ['18.x']
                 os: [ubuntu-20.04]
 
         steps:
@@ -38,7 +38,7 @@ jobs:
               run: pnpm run test --ci --coverage --maxWorkers=2
 
             - name: Upload Codecov Coverage
-              if: matrix.node == '16.x' && matrix.os == 'ubuntu-20.04' && startsWith(github.head_ref, 'renovate/') == false
+              if: matrix.node == '18.x' && matrix.os == 'ubuntu-20.04' && startsWith(github.head_ref, 'renovate/') == false
               uses: codecov/codecov-action@v3
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
@@ -50,7 +50,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                node: ['16.x']
+                node: ['18.x']
                 os: [ubuntu-latest]
 
         steps:
