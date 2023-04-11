@@ -26,7 +26,6 @@
         "test": "jest"
     },
     "dependencies": {
-        "@kizahasi/option": "^1.0.0",
         "@kizahasi/ot-core": "workspace:*",
         "@kizahasi/result": "^1.0.0",
         "diff-match-patch": "^1.0.5"
