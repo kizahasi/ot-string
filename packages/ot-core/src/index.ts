@@ -10,7 +10,7 @@ export {
 } from './internal/error';
 export { PositiveInt } from './internal/positiveInt';
 export { Insert, Delete, Replace } from './internal/type';
-export { applyAndRestore, compose, transform, invert } from './internal/core';
+export { apply, applyAndRestore, compose, transform, invert } from './internal/core';
 export { Operation, mapOperation } from './internal/operationBuilder/operation';
 export { OperationArrayElement } from './internal/operationBuilder/operationArrayElement';
 export { OperationBuilder } from './internal/operationBuilder/operationBuilder';
