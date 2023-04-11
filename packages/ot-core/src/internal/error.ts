@@ -15,7 +15,7 @@ export type ApplyError<TInsert, TDelete> =
       }
     | {
           type: typeof deleteValueNotMatch;
-          startCharIndex: number;
+          startIndex: number;
           expected: TDelete;
           actual: TInsert;
       };

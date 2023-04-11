@@ -1,4 +1,3 @@
-import { Option } from '@kizahasi/option';
 import { Result } from '@kizahasi/result';
 import {
     r,
@@ -44,10 +43,7 @@ type InsertOrReplace = Pick<
 const insertOrReplace: InsertOrReplace = {
     insert: ({ state, start, replacement }) => {
         return {
-            newState:
-                state.substring(0, start) +
-                (replacement.value?.value ?? '') +
-                state.substring(start),
+            newState: state.substring(0, start) + replacement.value + state.substring(start),
         };
     },
     replace: ({ state, start, deleteCount, replacement }) => {
@@ -101,7 +97,7 @@ export const applyAndRestore = ({
         getInsertLength: insert => insert.length.value,
         getDeleteLength: del => del,
         factory: twoWayFactory,
-        mapping: ({ actual }) => Option.some(actual),
+        validateDeleted: ({ actual }) => Result.ok(actual),
     });
     if (result.isError) {
         return result;

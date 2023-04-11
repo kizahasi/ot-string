@@ -33,11 +33,20 @@ type InsertParams<TState, TInsert> = {
     /** The index of the first element to be deleted. */
     start: number;
 
-    /** The elements to add to the state, beginning from `start`. If `None`, no elements are added. */
-    replacement: Option<TInsert>;
+    /** The elements to add to the state, beginning from `start`. */
+    replacement: TInsert;
 };
 
-type ReplaceParams<TState, TInsert> = InsertParams<TState, TInsert> & {
+type ReplaceParams<TState, TInsert> = {
+    /** A state to be updated. Do NOT update this value destuctively. */
+    state: TState;
+
+    /** The index of the first element to be deleted. */
+    start: number;
+
+    /** The elements to add to the state, beginning from `start`. If `None`, no elements are added. */
+    replacement: Option<TInsert>;
+
     /** The number of elements in the array to remove from `start`. */
     deleteCount: PositiveInt;
 };
@@ -57,44 +66,6 @@ type ReplaceStrategy<TState, TInsert> = {
     replace: (args: ReplaceParams<TState, TInsert>) => ReplaceReturnType<TState, TInsert>;
 };
 
-const replaceState = <TState, TInsert>({
-    source,
-    start,
-    deleteCount,
-    replacement,
-    getLength,
-    insert,
-    replace,
-}: {
-    source: TState;
-    start: number;
-    deleteCount: number;
-    /** The elements to add to the state, beginning from `start`. If `None`, no elements are added. */
-    replacement: Option<TInsert>;
-    getLength: (state: TState) => number;
-} & ReplaceStrategy<TState, TInsert>): {
-    newState: TState;
-    deleted: Option<TInsert>;
-} | null => {
-    if (getLength(source) < start + deleteCount) {
-        return null;
-    }
-
-    const deleteCountP = PositiveInt.tryCreate(deleteCount);
-    if (deleteCountP == null) {
-        const result = insert({ state: source, start, replacement });
-        return {
-            newState: result.newState,
-            deleted: Option.none(),
-        };
-    }
-    const result = replace({ state: source, start, replacement, deleteCount: deleteCountP });
-    return {
-        newState: result.newState,
-        deleted: Option.some(result.deleted),
-    };
-};
-
 const applyAndRestoreCore = <TState, TInsert, TDelete1, TDelete2>({
     state,
     action,
@@ -102,7 +73,7 @@ const applyAndRestoreCore = <TState, TInsert, TDelete1, TDelete2>({
     getInsertLength,
     getDeleteLength,
     restoreOption,
-    mapping,
+    validateDeleted,
     replace,
     insert,
 }: {
@@ -117,9 +88,12 @@ const applyAndRestoreCore = <TState, TInsert, TDelete1, TDelete2>({
         factory: OperationBuilderFactory<TInsert, TDelete2>;
     };
 
-    // Noneを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にSomeを返せばよい。
+    // Errorを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にOkを返せばよい。
     // restoreOption === undefinedのとき、TDelete2は使われないのでOkの値は何でもいい。
-    mapping: (params: { expected: TDelete1; actual: TInsert }) => Option<TDelete2>;
+    validateDeleted: (params: {
+        expected: TDelete1;
+        actual: TInsert;
+    }) => Result<TDelete2, undefined>;
 } & ReplaceStrategy<TState, TInsert>): Result<
     { newState: TState; restored?: Operation<TInsert, TDelete2> },
     ApplyError<TInsert, TDelete1>
@@ -147,41 +121,40 @@ const applyAndRestoreCore = <TState, TInsert, TDelete1, TDelete2>({
                 break;
             }
             case edit: {
-                const replaceResult = replaceState({
-                    source: result,
+                if (act.edit.type === insert$) {
+                    const insertResult = insert({
+                        state: result,
+                        start: cursor,
+                        replacement: act.edit.insert,
+                    });
+
+                    builder?.insert(act.edit.insert);
+                    result = insertResult.newState;
+                    cursor += getInsertLength(act.edit.insert);
+                    break;
+                }
+
+                const replaceResult = replace({
+                    state: result,
                     start: cursor,
-                    deleteCount:
-                        act.edit.type === insert$ ? 0 : getDeleteLength(act.edit.delete).value,
+                    deleteCount: getDeleteLength(act.edit.delete),
                     replacement:
                         act.edit.type === delete$ ? Option.none() : Option.some(act.edit.insert),
-                    getLength: state => getStateLength(state),
-                    insert,
-                    replace,
                 });
-                if (replaceResult == null) {
+                const mapped = validateDeleted({
+                    expected: act.edit.delete,
+                    actual: replaceResult.deleted,
+                });
+                if (mapped.isError) {
                     return Result.error({
-                        type: stateTooShort,
-                    });
-                }
-                if (act.edit.type !== insert$) {
-                    if (replaceResult.deleted.isNone) {
-                        throw new Error('This should not happen.');
-                    }
-                    const mapped = mapping({
+                        type: deleteValueNotMatch,
+                        startIndex: cursor,
                         expected: act.edit.delete,
-                        actual: replaceResult.deleted.value,
+                        actual: replaceResult.deleted,
                     });
-                    if (mapped.isNone) {
-                        return Result.error({
-                            type: deleteValueNotMatch,
-                            startCharIndex: cursor,
-                            expected: act.edit.delete,
-                            actual: replaceResult.deleted.value,
-                        });
-                    }
-                    builder?.delete(mapped.value);
                 }
-                if (act.edit.insert !== undefined) {
+                builder?.delete(mapped.value);
+                if (act.edit.type !== delete$) {
                     builder?.insert(act.edit.insert);
                 }
                 result = replaceResult.newState;
@@ -200,7 +173,7 @@ export const applyAndRestore = <TState, TInsert, TDelete1, TDelete2>({
     getInsertLength,
     getDeleteLength,
     factory,
-    mapping,
+    validateDeleted,
     replace,
     insert,
 }: {
@@ -209,8 +182,11 @@ export const applyAndRestore = <TState, TInsert, TDelete1, TDelete2>({
     getStateLength(state: TState): number;
     getInsertLength(insert: TInsert): number;
     getDeleteLength(del: TDelete1): PositiveInt;
-    // Noneを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にSomeを返せばよい。
-    mapping: (params: { expected: TDelete1; actual: TInsert }) => Option<TDelete2>;
+    // Errorを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にOkを返せばよい。
+    validateDeleted: (params: {
+        expected: TDelete1;
+        actual: TInsert;
+    }) => Result<TDelete2, undefined>;
     factory: OperationBuilderFactory<TInsert, TDelete2>;
 } & ReplaceStrategy<TState, TInsert>): Result<
     { newState: TState; restored: Operation<TInsert, TDelete2> },
@@ -224,7 +200,7 @@ export const applyAndRestore = <TState, TInsert, TDelete1, TDelete2>({
         getDeleteLength,
         replace,
         insert,
-        mapping,
+        validateDeleted,
         restoreOption: { factory },
     });
     if (result.isError) {
@@ -265,7 +241,7 @@ export const apply = <TState, TInsert, TDelete>({
         getDeleteLength,
         replace,
         insert,
-        mapping: () => Option.some(undefined),
+        validateDeleted: () => Result.ok(undefined),
     });
 };
 

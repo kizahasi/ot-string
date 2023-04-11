@@ -62,9 +62,6 @@ importers:
 
   packages/ot-string:
     dependencies:
-      '@kizahasi/option':
-        specifier: ^1.0.0
-        version: 1.1.0
       '@kizahasi/ot-core':
         specifier: workspace:*
         version: link:../ot-core
