@@ -20,8 +20,7 @@
         "dist"
     ],
     "scripts": {
-        "build": "rimraf ./dist && copyfiles \"./src/**/*.ts\" ./dist && tsc -p tsconfig.build-cjs.json && tsc -p tsconfig.build-esm.json && tsc -p tsconfig.build-types.json",
-        "test": "jest"
+        "build": "rimraf ./dist && copyfiles \"./src/**/*.ts\" ./dist && tsc -p tsconfig.build-cjs.json && tsc -p tsconfig.build-esm.json && tsc -p tsconfig.build-types.json"
     },
     "dependencies": {
         "@kizahasi/option": "^1.0.0",
