@@ -7,6 +7,7 @@ import {
     insert$,
     delete$,
     retain,
+    apply as applyCore,
     applyAndRestore as applyAndRestoreCore,
     compose as composeCore,
     transform as transformCore,
@@ -68,14 +69,13 @@ export const apply = ({
     prevState: string;
     upOperation: UpOperation;
 }): Result<string, ApplyError<NonEmptyString, PositiveInt>> => {
-    const result = applyAndRestoreCore({
+    const result = applyCore({
         ...insertOrReplace,
         state: prevState,
         action: Array.from(new OperationBuilder(upFactory, upOperation).toIterable()),
         getStateLength: state => state.length,
         getInsertLength: insert => insert.length.value,
         getDeleteLength: del => del,
-        mapping: () => Option.some(undefined),
     });
     if (result.isError) {
         return result;
@@ -100,16 +100,11 @@ export const applyAndRestore = ({
         getStateLength: state => state.length,
         getInsertLength: insert => insert.length.value,
         getDeleteLength: del => del,
-        restoreOption: {
-            factory: twoWayFactory,
-        },
+        factory: twoWayFactory,
         mapping: ({ actual }) => Option.some(actual),
     });
     if (result.isError) {
         return result;
-    }
-    if (result.value.restored === undefined) {
-        throw new Error('this should not happen');
     }
     return Result.ok({
         nextState: result.value.newState,

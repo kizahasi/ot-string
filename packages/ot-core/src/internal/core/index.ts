@@ -95,7 +95,7 @@ const replaceState = <TState, TInsert>({
     };
 };
 
-export const applyAndRestore = <TState, TInsert, TDelete1, TDelete2>({
+const applyAndRestoreCore = <TState, TInsert, TDelete1, TDelete2>({
     state,
     action,
     getStateLength,
@@ -191,6 +191,82 @@ export const applyAndRestore = <TState, TInsert, TDelete1, TDelete2>({
     }
 
     return Result.ok({ newState: result, restored: builder?.build() });
+};
+
+export const applyAndRestore = <TState, TInsert, TDelete1, TDelete2>({
+    state,
+    action,
+    getStateLength,
+    getInsertLength,
+    getDeleteLength,
+    factory,
+    mapping,
+    replace,
+    insert,
+}: {
+    state: TState;
+    action: ReadonlyArray<OperationArrayElement<TInsert, TDelete1>>;
+    getStateLength(state: TState): number;
+    getInsertLength(insert: TInsert): number;
+    getDeleteLength(del: TDelete1): PositiveInt;
+    // Noneを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にSomeを返せばよい。
+    mapping: (params: { expected: TDelete1; actual: TInsert }) => Option<TDelete2>;
+    factory: OperationBuilderFactory<TInsert, TDelete2>;
+} & ReplaceStrategy<TState, TInsert>): Result<
+    { newState: TState; restored: Operation<TInsert, TDelete2> },
+    ApplyError<TInsert, TDelete1>
+> => {
+    const result = applyAndRestoreCore({
+        state,
+        action,
+        getStateLength,
+        getInsertLength,
+        getDeleteLength,
+        replace,
+        insert,
+        mapping,
+        restoreOption: { factory },
+    });
+    if (result.isError) {
+        return result;
+    }
+    if (result.value.restored == null) {
+        throw new Error('This should not happen.');
+    }
+    return Result.ok({
+        newState: result.value.newState,
+        restored: result.value.restored,
+    });
+};
+
+export const apply = <TState, TInsert, TDelete>({
+    state,
+    action,
+    getStateLength,
+    getInsertLength,
+    getDeleteLength,
+    replace,
+    insert,
+}: {
+    state: TState;
+    action: ReadonlyArray<OperationArrayElement<TInsert, TDelete>>;
+    getStateLength(state: TState): number;
+    getInsertLength(insert: TInsert): number;
+    getDeleteLength(del: TDelete): PositiveInt;
+} & ReplaceStrategy<TState, TInsert>): Result<
+    { newState: TState },
+    ApplyError<TInsert, TDelete>
+> => {
+    return applyAndRestoreCore({
+        state,
+        action,
+        getStateLength,
+        getInsertLength,
+        getDeleteLength,
+        replace,
+        insert,
+        mapping: () => Option.some(undefined),
+    });
 };
 
 // 実装にあたって https://github.com/Operational-Transformation/ot.js/blob/e9a3a0e214dd6c001e25515274bae0842a8415f2/lib/text-operation.js#L238 を参考にした
