@@ -1,0 +1,34 @@
+name: On PR to release branch
+
+on:
+    pull_request:
+        branches: [release]
+
+jobs:
+    comment-to-pr:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18.x
+                  registry-url: 'https://registry.npmjs.org'
+                  always-auth: true
+            - uses: pnpm/action-setup@v2
+            - run: pnpm i
+            - name: dry-run
+              run: |
+                  EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+                  echo "DRY_RUN_OUTPUT<<$EOF" >> $GITHUB_ENV
+                  echo $(pnpm -r publish --dry-run --no-git-checks) >> $GITHUB_ENV
+                  echo "$EOF" >> $GITHUB_ENV
+            - name: comment to the PR
+              uses: thollander/actions-comment-pull-request@v2
+              with:
+                  message: >
+                      Following packages will be published if you accept this PR.
+
+                      ```
+                      ${{ env.DRY_RUN_OUTPUT }}
+                      ```

@@ -1,4 +1,4 @@
-import { PositiveInt } from './positiveInt';
+import { PositiveInt } from '@kizahasi/ot-core';
 
 export class NonEmptyString {
     public constructor(private source: string) {

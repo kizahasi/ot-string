@@ -1,14 +1,25 @@
 import { Option } from '@kizahasi/option';
 import { Result } from '@kizahasi/result';
-import { r, i, d, insert$, delete$, retain } from '../const';
-import { composeCore, transformCore, invertCore, applyAndRestoreCore } from '../core';
-import { ApplyError, ComposeAndTransformError } from '../error';
+import {
+    r,
+    i,
+    d,
+    insert$,
+    delete$,
+    retain,
+    applyAndRestore as applyAndRestoreCore,
+    compose as composeCore,
+    transform as transformCore,
+    invert as invertCore,
+    ComposeAndTransformError,
+    PositiveInt,
+    Operation,
+    OperationBuilder,
+    ApplyError,
+} from '@kizahasi/ot-core';
 import { NonEmptyString } from '../nonEmptyString';
-import { PositiveInt } from '../positiveInt';
-import { upFactory, twoWayFactory } from '../operationBuilder/operationBuilderFactory';
-import { Operation } from '../operationBuilder/operation';
-import { OperationBuilder } from '../operationBuilder/operationBuilder';
 import * as TextTwoWayOperation from './twoWayOperation';
+import { twoWayFactory, upFactory } from '../operationBuilderFactory';
 
 export type UpOperation = Operation<NonEmptyString, PositiveInt>;
 export type UpOperationUnit =
@@ -25,16 +36,44 @@ export type UpOperationUnit =
           d: number;
       };
 
+type InsertOrReplace = Pick<
+    Parameters<typeof applyAndRestoreCore<string, NonEmptyString, NonEmptyString, undefined>>[0],
+    'insert' | 'replace'
+>;
+const insertOrReplace: InsertOrReplace = {
+    insert: ({ state, start, replacement }) => {
+        return {
+            newState:
+                state.substring(0, start) +
+                (replacement.value?.value ?? '') +
+                state.substring(start),
+        };
+    },
+    replace: ({ state, start, deleteCount, replacement }) => {
+        const deleted = state.substring(start, start + deleteCount.value);
+        return {
+            newState:
+                state.substring(0, start) +
+                (replacement.value?.value ?? '') +
+                state.substring(start + deleteCount.value),
+            deleted: new NonEmptyString(deleted),
+        };
+    },
+};
+
 export const apply = ({
     prevState,
     upOperation,
 }: {
     prevState: string;
     upOperation: UpOperation;
-}): Result<string, ApplyError<PositiveInt>> => {
+}): Result<string, ApplyError<NonEmptyString, PositiveInt>> => {
     const result = applyAndRestoreCore({
+        ...insertOrReplace,
         state: prevState,
         action: Array.from(new OperationBuilder(upFactory, upOperation).toIterable()),
+        getStateLength: state => state.length,
+        getInsertLength: insert => insert.length.value,
         getDeleteLength: del => del,
         mapping: () => Option.some(undefined),
     });
@@ -52,11 +91,14 @@ export const applyAndRestore = ({
     upOperation: UpOperation;
 }): Result<
     { nextState: string; restored: TextTwoWayOperation.TwoWayOperation },
-    ApplyError<PositiveInt>
+    ApplyError<NonEmptyString, PositiveInt>
 > => {
     const result = applyAndRestoreCore({
+        ...insertOrReplace,
         state: prevState,
         action: Array.from(new OperationBuilder(upFactory, upOperation).toIterable()),
+        getStateLength: state => state.length,
+        getInsertLength: insert => insert.length.value,
         getDeleteLength: del => del,
         restoreOption: {
             factory: twoWayFactory,

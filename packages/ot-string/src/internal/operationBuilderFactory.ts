@@ -1,12 +1,5 @@
-import { NonEmptyString } from '../nonEmptyString';
-import { PositiveInt } from '../positiveInt';
-
-export type OperationBuilderFactory<TInsert, TDelete> = {
-    getInsertLength(insert: TInsert): PositiveInt;
-    getDeleteLength(del: TDelete): PositiveInt;
-    concatInsert(first: TInsert, second: TInsert): TInsert;
-    concatDelete(first: TDelete, second: TDelete): TDelete;
-};
+import { OperationBuilderFactory, PositiveInt } from '@kizahasi/ot-core';
+import { NonEmptyString } from './nonEmptyString';
 
 export const upFactory: OperationBuilderFactory<NonEmptyString, PositiveInt> = {
     getInsertLength: x => x.length,

@@ -1,13 +1,12 @@
-import { NonEmptyString } from './nonEmptyString';
 import { Operation } from './operationBuilder/operation';
 
-export const deleteStringNotMatch = 'deleteStringNotMatch';
-export const stateTooShort = 'stateTooShort';
-export const stateTooLong = 'stateTooLong';
 export const secondTooShort = 'secondTooShort';
 export const secondTooLong = 'secondTooLong';
+export const deleteValueNotMatch = 'deleteValueNotMatch';
+export const stateTooShort = 'stateTooShort';
+export const stateTooLong = 'stateTooLong';
 
-export type ApplyError<TDelete> =
+export type ApplyError<TInsert, TDelete> =
     | {
           type: typeof stateTooShort;
       }
@@ -15,10 +14,10 @@ export type ApplyError<TDelete> =
           type: typeof stateTooLong;
       }
     | {
-          type: typeof deleteStringNotMatch;
+          type: typeof deleteValueNotMatch;
           startCharIndex: number;
           expected: TDelete;
-          actual: NonEmptyString;
+          actual: TInsert;
       };
 
 export type ComposeAndTransformErrorBase = {
