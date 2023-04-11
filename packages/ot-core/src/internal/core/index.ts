@@ -174,7 +174,7 @@ const applyAndRestoreCore = <TState, TInsert, TDelete1, TDelete2>({
                     if (mapped.isNone) {
                         return Result.error({
                             type: deleteValueNotMatch,
-                            startCharIndex: cursor,
+                            startIndex: cursor,
                             expected: act.edit.delete,
                             actual: replaceResult.deleted.value,
                         });
