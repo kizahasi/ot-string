@@ -20,7 +20,7 @@ jobs:
               run: |
                   EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
                   echo "DRY_RUN_OUTPUT<<$EOF" >> $GITHUB_ENV
-                  echo $(pnpm -r publish --dry-run) >> $GITHUB_ENV
+                  echo $(pnpm -r publish --dry-run --no-git-checks) >> $GITHUB_ENV
                   echo "$EOF" >> $GITHUB_ENV
             - name: comment to the PR
               uses: thollander/actions-comment-pull-request@v2
