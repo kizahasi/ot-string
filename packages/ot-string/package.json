@@ -9,7 +9,8 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/kizahasi/ot-string"
+        "url": "https://github.com/kizahasi/ot-string",
+        "directory": "packages/ot-string"
     },
     "license": "MIT",
     "author": "kizahasi",
