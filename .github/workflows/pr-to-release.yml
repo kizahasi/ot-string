@@ -5,7 +5,7 @@ on:
         branches: [release]
 
 jobs:
-    build:
+    comment-to-pr:
         runs-on: ubuntu-latest
 
         steps:
@@ -17,18 +17,17 @@ jobs:
                   always-auth: true
             - uses: pnpm/action-setup@v2
             - name: dry-run
-              id: dry-run
               run: |
                   EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-                  echo "OUTPUT<<$EOF" >> $GITHUB_OUTPUT
-                  pnpm -r publish --dry-run >> $GITHUB_OUTPUT
-                  echo "$EOF" >> $GITHUB_OUTPUT
-            - name: dry-run and comment to the PR
+                  echo "DRY_RUN_OUTPUT<<$EOF" >> $GITHUB_ENV
+                  echo $(pnpm -r publish --dry-run) >> $GITHUB_ENV
+                  echo "$EOF" >> $GITHUB_ENV
+            - name: comment to the PR
               uses: thollander/actions-comment-pull-request@v2
               with:
                   message: >
                       Following packages will be published if you accept this PR.
 
                       ```
-                      ${{ steps.dry-run.outputs.OUTPUT }}
+                      ${{ env.DRY_RUN_OUTPUT }}
                       ```
