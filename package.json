@@ -1,24 +1,21 @@
 {
-    "private": true,
     "name": "root",
+    "private": true,
     "license": "MIT",
-    "engines": {
-        "node": ">=14"
-    },
-    "packageManager": "pnpm@8.2.0",
-    "prettier": {
-        "printWidth": 100,
-        "semi": true,
-        "singleQuote": true,
-        "trailingComma": "es5",
-        "tabWidth": 4,
-        "arrowParens": "avoid"
-    },
     "scripts": {
         "lint": "eslint --ext .ts .",
         "prepare": "husky install",
         "prettier": "pnpm prettier:base --write",
-        "prettier:base": "prettier \"**/*.{ts,js,json,yml,md}\" \"pnpm-workspace.yaml\""
+        "prettier:base": "prettier \"**/*.{ts,js,json,yml,md}\" \"pnpm-workspace.yaml\"",
+        "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\""
+    },
+    "prettier": {
+        "arrowParens": "avoid",
+        "printWidth": 100,
+        "semi": true,
+        "singleQuote": true,
+        "tabWidth": 4,
+        "trailingComma": "es5"
     },
     "devDependencies": {
         "@commitlint/cli": "17.3.0",
@@ -28,6 +25,11 @@
         "eslint": "8.28.0",
         "eslint-config-prettier": "8.5.0",
         "husky": "8.0.3",
-        "prettier": "2.8.7"
+        "prettier": "2.8.7",
+        "sort-package-json": "2.4.1"
+    },
+    "packageManager": "pnpm@8.2.0",
+    "engines": {
+        "node": ">=14"
     }
 }

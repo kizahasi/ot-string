@@ -1,6 +1,19 @@
 {
+    "name": "@kizahasi/ot-string",
     "version": "0.6.0-dev",
+    "description": "Operational Transfomation library for string",
+    "keywords": [
+        "operational transformation",
+        "operational transform",
+        "ot"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kizahasi/ot-string"
+    },
     "license": "MIT",
+    "author": "kizahasi",
+    "sideEffects": false,
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
     "typings": "dist/types/index.d.ts",
@@ -11,19 +24,11 @@
         "build": "rimraf ./dist && copyfiles \"./src/**/*.ts\" ./dist && tsc -p tsconfig.build-cjs.json && tsc -p tsconfig.build-esm.json && tsc -p tsconfig.build-types.json",
         "test": "jest"
     },
-    "name": "@kizahasi/ot-string",
-    "author": "kizahasi",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/kizahasi/ot-string"
+    "dependencies": {
+        "@kizahasi/option": "^1.0.0",
+        "@kizahasi/result": "^1.0.0",
+        "diff-match-patch": "^1.0.5"
     },
-    "description": "Operational Transfomation library for string",
-    "keywords": [
-        "operational transformation",
-        "operational transform",
-        "ot"
-    ],
-    "sideEffects": false,
     "devDependencies": {
         "@types/diff-match-patch": "1.0.32",
         "@types/jest": "29.2.5",
@@ -33,10 +38,5 @@
         "rimraf": "3.0.2",
         "ts-jest": "29.1.0",
         "typescript": "4.9.5"
-    },
-    "dependencies": {
-        "@kizahasi/option": "^1.0.0",
-        "@kizahasi/result": "^1.0.0",
-        "diff-match-patch": "^1.0.5"
     }
 }
