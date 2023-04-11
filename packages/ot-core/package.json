@@ -1,7 +1,6 @@
 {
-    "name": "@kizahasi/ot-string",
-    "version": "0.6.0-dev",
-    "description": "Operational Transfomation library for string",
+    "name": "@kizahasi/ot-core",
+    "version": "0.1.0",
     "keywords": [
         "operational transformation",
         "operational transform",
@@ -26,15 +25,11 @@
     },
     "dependencies": {
         "@kizahasi/option": "^1.0.0",
-        "@kizahasi/ot-core": "workspace:^",
-        "@kizahasi/result": "^1.0.0",
-        "diff-match-patch": "^1.0.5"
+        "@kizahasi/result": "^1.0.0"
     },
     "devDependencies": {
-        "@types/diff-match-patch": "1.0.32",
         "@types/jest": "29.2.5",
         "copyfiles": "2.4.1",
-        "fast-check": "3.4.0",
         "jest": "29.3.1",
         "rimraf": "3.0.2",
         "ts-jest": "29.1.0",

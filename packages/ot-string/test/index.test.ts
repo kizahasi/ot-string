@@ -1,7 +1,6 @@
+import { PositiveInt, delete$, insert$ } from '@kizahasi/ot-core';
 import {
-    insert$,
     NonEmptyString,
-    PositiveInt,
     diff,
     toUpOperation,
     apply,
@@ -13,7 +12,6 @@ import {
     toDownOperation,
     applyBack,
     DownOperation,
-    delete$,
     applyBackAndRestore,
     composeDownOperation,
     serializeTwoWayOperation,

@@ -1,13 +1,21 @@
 import { Result } from '@kizahasi/result';
 import { diff_match_patch } from 'diff-match-patch';
-import { r, i, d, insert$, delete$, retain } from '../const';
-import { transformCore } from '../core';
-import { ComposeAndTransformError } from '../error';
+import {
+    r,
+    i,
+    d,
+    insert$,
+    delete$,
+    retain,
+    ComposeAndTransformError,
+    transform as transformCore,
+    PositiveInt,
+    Operation,
+    OperationBuilder,
+    mapOperation,
+} from '@kizahasi/ot-core';
 import { NonEmptyString } from '../nonEmptyString';
-import { PositiveInt } from '../positiveInt';
-import { twoWayFactory } from '../operationBuilder/operationBuilderFactory';
-import { Operation, mapOperation } from '../operationBuilder/operation';
-import { OperationBuilder } from '../operationBuilder/operationBuilder';
+import { twoWayFactory } from '../operationBuilderFactory';
 
 export type TwoWayOperation = Operation<NonEmptyString, NonEmptyString>;
 export type TwoWayOperationUnit =

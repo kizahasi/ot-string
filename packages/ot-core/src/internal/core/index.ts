@@ -1,24 +1,18 @@
-import { Option } from '@kizahasi/option';
 import { Result } from '@kizahasi/result';
-import { retain, edit, delete$, insert$ } from '../const';
+import { retain, delete$, insert$, edit } from '../const';
 import {
     ApplyError,
     ComposeAndTransformErrorBase,
-    deleteStringNotMatch,
+    deleteValueNotMatch,
     secondTooLong,
     secondTooShort,
     stateTooLong,
     stateTooShort,
 } from '../error';
-import { NonEmptyString } from '../nonEmptyString';
 import { PositiveInt } from '../positiveInt';
 import { invertEditElement } from '../operationBuilder/editElement';
 import { OperationBuilderFactory } from '../operationBuilder/operationBuilderFactory';
 import { Operation } from '../operationBuilder/operation';
-import {
-    OperationArrayElement,
-    prevLengthOfOperationElementArray,
-} from '../operationBuilder/operationArrayElement';
 import { OperationBuilder } from '../operationBuilder/operationBuilder';
 import { invertOperationElement } from '../operationBuilder/operationElement';
 import {
@@ -26,56 +20,115 @@ import {
     nextLengthOfOperationUnitArray,
     prevLengthOfOperationUnitArray,
 } from '../operationBuilder/operationUnit';
+import {
+    OperationArrayElement,
+    prevLengthOfOperationElementArray,
+} from '../operationBuilder/operationArrayElement';
+import { Option } from '@kizahasi/option';
 
-const replace = ({
+type InsertParams<TState, TInsert> = {
+    /** A state to be updated. Do NOT update this value destuctively. */
+    state: TState;
+
+    /** The index of the first element to be deleted. */
+    start: number;
+
+    /** The elements to add to the state, beginning from `start`. If `None`, no elements are added. */
+    replacement: Option<TInsert>;
+};
+
+type ReplaceParams<TState, TInsert> = InsertParams<TState, TInsert> & {
+    /** The number of elements in the array to remove from `start`. */
+    deleteCount: PositiveInt;
+};
+
+type InsertReturnType<TState> = {
+    /** The updated state. */
+    newState: TState;
+};
+
+type ReplaceReturnType<TState, TInsert> = InsertReturnType<TState> & {
+    /** Deleted elements. */
+    deleted: TInsert;
+};
+
+type ReplaceStrategy<TState, TInsert> = {
+    insert: (args: InsertParams<TState, TInsert>) => InsertReturnType<TState>;
+    replace: (args: ReplaceParams<TState, TInsert>) => ReplaceReturnType<TState, TInsert>;
+};
+
+const replaceState = <TState, TInsert>({
     source,
     start,
-    count,
+    deleteCount,
     replacement,
+    getLength,
+    insert,
+    replace,
 }: {
-    source: string;
+    source: TState;
     start: number;
-    count: number;
-    replacement: string;
-}): { deleted: string; newValue: string } | null => {
-    if (source.length < start + count) {
+    deleteCount: number;
+    /** The elements to add to the state, beginning from `start`. If `None`, no elements are added. */
+    replacement: Option<TInsert>;
+    getLength: (state: TState) => number;
+} & ReplaceStrategy<TState, TInsert>): {
+    newState: TState;
+    deleted: Option<TInsert>;
+} | null => {
+    if (getLength(source) < start + deleteCount) {
         return null;
     }
-    const deleted = source.substring(start, start + count);
+
+    const deleteCountP = PositiveInt.tryCreate(deleteCount);
+    if (deleteCountP == null) {
+        const result = insert({ state: source, start, replacement });
+        return {
+            newState: result.newState,
+            deleted: Option.none(),
+        };
+    }
+    const result = replace({ state: source, start, replacement, deleteCount: deleteCountP });
     return {
-        newValue: source.substring(0, start) + replacement + source.substring(start + count),
-        deleted,
+        newState: result.newState,
+        deleted: Option.some(result.deleted),
     };
 };
 
-export const applyAndRestoreCore = <TDelete1, TDelete2>({
+export const applyAndRestore = <TState, TInsert, TDelete1, TDelete2>({
     state,
     action,
+    getStateLength,
+    getInsertLength,
     getDeleteLength,
     restoreOption,
     mapping,
+    replace,
+    insert,
 }: {
-    state: string;
-    action: ReadonlyArray<OperationArrayElement<NonEmptyString, TDelete1>>;
+    state: TState;
+    action: ReadonlyArray<OperationArrayElement<TInsert, TDelete1>>;
+    getStateLength(state: TState): number;
+    getInsertLength(insert: TInsert): number;
     getDeleteLength(del: TDelete1): PositiveInt;
 
     // restoreOptionがundefined ⇔ 戻り値のrestoredがnon-undefined
     restoreOption?: {
-        factory: OperationBuilderFactory<NonEmptyString, TDelete2>;
+        factory: OperationBuilderFactory<TInsert, TDelete2>;
     };
 
     // Noneを返すと、expectedとactualが異なるとみなしてエラーになる。expectedがPositiveIntなどのときは常にSomeを返せばよい。
     // restoreOption === undefinedのとき、TDelete2は使われないのでOkの値は何でもいい。
-    mapping: (params: { expected: TDelete1; actual: NonEmptyString }) => Option<TDelete2>;
-}): Result<
-    { newState: string; restored?: Operation<NonEmptyString, TDelete2> },
-    ApplyError<TDelete1>
+    mapping: (params: { expected: TDelete1; actual: TInsert }) => Option<TDelete2>;
+} & ReplaceStrategy<TState, TInsert>): Result<
+    { newState: TState; restored?: Operation<TInsert, TDelete2> },
+    ApplyError<TInsert, TDelete1>
 > => {
     const prevLength = prevLengthOfOperationElementArray(action, getDeleteLength);
-    if (state.length < prevLength) {
+    if (getStateLength(state) < prevLength) {
         return Result.error({ type: stateTooShort });
     }
-    if (state.length > prevLength) {
+    if (getStateLength(state) > prevLength) {
         return Result.error({ type: stateTooLong });
     }
 
@@ -84,7 +137,7 @@ export const applyAndRestoreCore = <TDelete1, TDelete2>({
     const builder =
         restoreOption == null
             ? undefined
-            : new OperationBuilder<NonEmptyString, TDelete2>(restoreOption.factory);
+            : new OperationBuilder<TInsert, TDelete2>(restoreOption.factory);
 
     for (const act of action) {
         switch (act.type) {
@@ -94,30 +147,36 @@ export const applyAndRestoreCore = <TDelete1, TDelete2>({
                 break;
             }
             case edit: {
-                const replacement = act.edit.insert?.value ?? '';
-                const replaceResult = replace({
+                const replaceResult = replaceState({
                     source: result,
                     start: cursor,
-                    count: act.edit.delete == null ? 0 : getDeleteLength(act.edit.delete).value,
-                    replacement,
+                    deleteCount:
+                        act.edit.type === insert$ ? 0 : getDeleteLength(act.edit.delete).value,
+                    replacement:
+                        act.edit.type === delete$ ? Option.none() : Option.some(act.edit.insert),
+                    getLength: state => getStateLength(state),
+                    insert,
+                    replace,
                 });
                 if (replaceResult == null) {
                     return Result.error({
                         type: stateTooShort,
                     });
                 }
-                if (act.edit.delete != null) {
-                    const deleted = new NonEmptyString(replaceResult.deleted);
+                if (act.edit.type !== insert$) {
+                    if (replaceResult.deleted.isNone) {
+                        throw new Error('This should not happen.');
+                    }
                     const mapped = mapping({
                         expected: act.edit.delete,
-                        actual: deleted,
+                        actual: replaceResult.deleted.value,
                     });
                     if (mapped.isNone) {
                         return Result.error({
-                            type: deleteStringNotMatch,
+                            type: deleteValueNotMatch,
                             startCharIndex: cursor,
                             expected: act.edit.delete,
-                            actual: deleted,
+                            actual: replaceResult.deleted.value,
                         });
                     }
                     builder?.delete(mapped.value);
@@ -125,8 +184,8 @@ export const applyAndRestoreCore = <TDelete1, TDelete2>({
                 if (act.edit.insert !== undefined) {
                     builder?.insert(act.edit.insert);
                 }
-                result = replaceResult.newValue;
-                cursor += replacement.length;
+                result = replaceResult.newState;
+                cursor += act.edit.insert == null ? 0 : getInsertLength(act.edit.insert);
             }
         }
     }
@@ -135,7 +194,7 @@ export const applyAndRestoreCore = <TDelete1, TDelete2>({
 };
 
 // 実装にあたって https://github.com/Operational-Transformation/ot.js/blob/e9a3a0e214dd6c001e25515274bae0842a8415f2/lib/text-operation.js#L238 を参考にした
-export const composeCore = <TInsert, TDelete>({
+export const compose = <TInsert, TDelete>({
     first: $first,
     second: $second,
     factory,
@@ -323,7 +382,7 @@ export const composeCore = <TInsert, TDelete>({
     }
 };
 
-export const transformCore = <TInsert, TDelete>({
+export const transform = <TInsert, TDelete>({
     first: $first,
     second: $second,
     factory,
@@ -545,7 +604,7 @@ export const transformCore = <TInsert, TDelete>({
     }
 };
 
-export const invertCore = <T1, T2>(source: Operation<T1, T2>): Operation<T2, T1> => {
+export const invert = <T1, T2>(source: Operation<T1, T2>): Operation<T2, T1> => {
     return {
         headEdit:
             source.headEdit === undefined ? source.headEdit : invertEditElement(source.headEdit),

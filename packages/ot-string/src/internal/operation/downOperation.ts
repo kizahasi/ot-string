@@ -1,14 +1,23 @@
 import { Result } from '@kizahasi/result';
-import { r, i, d, insert$, delete$, retain } from '../const';
-import { invertCore, composeCore } from '../core';
-import { ApplyError, ComposeAndTransformError } from '../error';
+import {
+    r,
+    i,
+    d,
+    insert$,
+    delete$,
+    retain,
+    invert as invertCore,
+    compose as composeCore,
+    ComposeAndTransformError,
+    Operation,
+    OperationBuilder,
+    PositiveInt,
+    ApplyError,
+} from '@kizahasi/ot-core';
 import { NonEmptyString } from '../nonEmptyString';
-import { PositiveInt } from '../positiveInt';
-import { downFactory } from '../operationBuilder/operationBuilderFactory';
-import { Operation } from '../operationBuilder/operation';
-import { OperationBuilder } from '../operationBuilder/operationBuilder';
 import * as TextTwoWayOperation from './twoWayOperation';
 import * as TextUpOperation from './upOperation';
+import { downFactory } from '../operationBuilderFactory';
 
 export type DownOperation = Operation<PositiveInt, NonEmptyString>;
 export type DownOperationUnit =
@@ -31,7 +40,7 @@ export const applyBack = ({
 }: {
     nextState: string;
     downOperation: DownOperation;
-}): Result<string, ApplyError<PositiveInt>> => {
+}): Result<string, ApplyError<NonEmptyString, PositiveInt>> => {
     return TextUpOperation.apply({
         prevState: nextState,
         upOperation: invertCore(downOperation),
@@ -46,7 +55,7 @@ export const applyBackAndRestore = ({
     downOperation: DownOperation;
 }): Result<
     { prevState: string; restored: TextTwoWayOperation.TwoWayOperation },
-    ApplyError<PositiveInt>
+    ApplyError<NonEmptyString, PositiveInt>
 > => {
     const invertedResult = TextUpOperation.applyAndRestore({
         prevState: nextState,
