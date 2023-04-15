@@ -44,4 +44,8 @@ export class PositiveInt {
 
         return new PositiveInt(source);
     }
+
+    toString() {
+        return this.value.toString();
+    }
 }

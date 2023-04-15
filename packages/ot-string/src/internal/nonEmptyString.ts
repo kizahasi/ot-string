@@ -1,28 +1,35 @@
 import { PositiveInt } from '@kizahasi/ot-core';
 
 export class NonEmptyString {
-    public constructor(private source: string) {
+    #source: string;
+
+    constructor(source: string) {
         if (source === '') {
             throw new Error('empty string');
         }
+        this.#source = source;
     }
 
-    public get value(): string {
-        return this.source;
+    get value(): string {
+        return this.#source;
     }
 
-    public get length(): PositiveInt {
-        return new PositiveInt(this.source.length);
+    get length(): PositiveInt {
+        return new PositiveInt(this.value.length);
     }
 
-    public concat(other: NonEmptyString): NonEmptyString {
+    concat(other: NonEmptyString): NonEmptyString {
         return new NonEmptyString(this.value + other.value);
     }
 
-    public static tryCreate(source: string): NonEmptyString | undefined {
+    static tryCreate(source: string): NonEmptyString | undefined {
         if (source === '') {
             return undefined;
         }
         return new NonEmptyString(source);
+    }
+
+    toString() {
+        return this.value;
     }
 }
