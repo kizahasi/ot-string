@@ -19,8 +19,8 @@
         "trailingComma": "es5"
     },
     "devDependencies": {
-        "@commitlint/cli": "17.7.2",
-        "@commitlint/config-conventional": "17.7.0",
+        "@commitlint/cli": "17.8.1",
+        "@commitlint/config-conventional": "17.8.1",
         "@typescript-eslint/eslint-plugin": "5.45.0",
         "@typescript-eslint/parser": "5.45.0",
         "eslint": "8.48.0",
