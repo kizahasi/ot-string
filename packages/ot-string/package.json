@@ -31,7 +31,7 @@
         "diff-match-patch": "^1.0.5"
     },
     "devDependencies": {
-        "@types/diff-match-patch": "1.0.32",
+        "@types/diff-match-patch": "1.0.36",
         "@types/jest": "29.5.12",
         "copyfiles": "2.4.1",
         "fast-check": "3.4.0",
