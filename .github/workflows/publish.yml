@@ -16,7 +16,7 @@ jobs:
                   node-version: 18.x
                   registry-url: 'https://registry.npmjs.org'
                   always-auth: true
-            - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v4
             - name: install
               run: pnpm i
             - name: build
