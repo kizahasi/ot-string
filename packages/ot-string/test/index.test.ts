@@ -15,7 +15,7 @@ import {
     applyBackAndRestore,
     composeDownOperation,
     serializeTwoWayOperation,
-    deserizalizeTwoWayOperation,
+    deserializeTwoWayOperation,
     serializeDownOperation,
     serializeUpOperation,
     deserializeDownOperation,
@@ -337,7 +337,7 @@ describe('serialize and deserialize', () => {
             fc.property(fc.string(), fc.string(), (prevState, nextState) => {
                 const operation = diff({ prevState, nextState });
                 const serialized = serializeTwoWayOperation(operation);
-                const deserialized = deserizalizeTwoWayOperation(serialized);
+                const deserialized = deserializeTwoWayOperation(serialized);
                 expect(deserialized).toEqual(operation);
             })
         );
