@@ -5,7 +5,7 @@ export {
     toDownOperation,
     toUpOperation,
     toUnit as serializeTwoWayOperation,
-    ofUnit as deserizalizeTwoWayOperation,
+    ofUnit as deserializeTwoWayOperation,
     diff as diff,
     transform as transformTwoWayOperation,
 } from './internal/operation/twoWayOperation';
