@@ -27,7 +27,7 @@
         "eslint-config-prettier": "8.10.0",
         "husky": "8.0.3",
         "prettier": "2.8.8",
-        "sort-package-json": "2.10.1"
+        "sort-package-json": "2.12.0"
     },
     "packageManager": "pnpm@9.12.3",
     "engines": {
